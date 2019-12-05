@@ -3,6 +3,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.8.RELEASE'
 	id 'org.asciidoctor.convert' version '1.5.8'
 	id 'java'
+	id "org.flywaydb.flyway" version "6.1.0"
 }
 
 group = 'com.javadevzone'
@@ -13,6 +14,12 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+}
+
+flyway {
+	url = 'jdbc:mysql://localhost:3306/cotas'
+	user = 'root'
+	password = '123456'
 }
 
 repositories {
