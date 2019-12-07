@@ -8,6 +8,7 @@ class CotasApplicationTests {
 
 	@Test
 	void contextLoads() {
+
 	}
 
 }
