@@ -7,18 +7,17 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class Carteira {
+@AllArgsConstructor
+@Builder
+public class Fechamento {
 
-    private String nome;
-    private List<Ativo> ativos;
-    private LocalDate dataCriacao;
-    private List<Cotista> cotistas;
-    private BigDecimal cota;
+    private Long id;
+    private Ativo ticket;
+    private BigDecimal valor;
+    private LocalDate data;
 
 }
+
