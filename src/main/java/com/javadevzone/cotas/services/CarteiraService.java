@@ -9,9 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.Period;
 
 @Service
 @AllArgsConstructor
@@ -19,33 +19,39 @@ import java.time.Period;
 public class CarteiraService {
 
     private FechamentoRepository fechamentoRepository;
-//    private CarteiraRepository carteiraRepository;
+
+    private final static MathContext MATH_CONTEXT = new MathContext(6, RoundingMode.HALF_UP);
 
     public Carteira consolidar(Carteira carteira) {
-        BigDecimal cotaCalculada = carteira.getAtivos()
+        BigDecimal resultadoFinanceiroHoje = carteira.getAtivos()
                 .stream()
                 .map(ativo -> {
                     Fechamento fechamentoHoje = fechamentoRepository.findByTicket(ativo, LocalDate.now());
-                    Fechamento fechamentoOntem = fechamentoRepository.findByTicket(ativo, LocalDate.now().minus(Period.ofDays(-1)));
-
-                    BigDecimal variacaoDoAtivo = calculaVariacaoAtivo(fechamentoHoje, fechamentoOntem);
-                    BigDecimal variacaoCota = carteira.getCota().add(carteira.getCota().multiply(variacaoDoAtivo));
-                    return variacaoCota;
+                    return fechamentoHoje.getValor().multiply(new BigDecimal(ativo.getQuantidade()), MATH_CONTEXT);
                 }).reduce(BigDecimal::add).get();
 
-        carteira.setCota(cotaCalculada);
+        BigDecimal novaCota = calculaCota(carteira, resultadoFinanceiroHoje);
+
+        carteira.setCota(novaCota);
+        carteira.setValorTotal(resultadoFinanceiroHoje);
+        carteira.setDataAtualizacaoCota(LocalDate.now());
         log.info("{}", carteira);
-//        carteiraRepository.save(carteira);
 
         return carteira;
     }
 
-    private BigDecimal calculaVariacaoAtivo(Fechamento fechamentoHoje, Fechamento fechamentoOntem) {
+    private BigDecimal calculaCota(final Carteira carteira, final BigDecimal financeiroHoje) {
+        BigDecimal financeiroOntem = carteira.getValorTotal();
+
         try {
-            return fechamentoHoje.getValor().subtract(fechamentoOntem.getValor())
-                    .divide(fechamentoOntem.getValor(), 6, RoundingMode.HALF_UP);
+            BigDecimal variacaoCota = financeiroHoje.subtract(financeiroOntem)
+                    .divide(financeiroOntem, 6, RoundingMode.HALF_UP);
+            BigDecimal resultado = carteira.getCota().add(carteira.getCota().multiply(variacaoCota)).setScale(6, RoundingMode.HALF_UP);
+            log.info("Novo valor da cota é {}", resultado);
+
+            return resultado;
         } catch(ArithmeticException e) {
-            throw new ValoresDeFechamentoInvalidoException(e, fechamentoHoje, fechamentoOntem);
+            throw new ValoresDeFechamentoInvalidoException(e, financeiroHoje, financeiroOntem);
         }
     }
 }

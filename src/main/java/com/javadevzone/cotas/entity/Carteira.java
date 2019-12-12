@@ -1,9 +1,6 @@
 package com.javadevzone.cotas.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,5 +17,7 @@ public class Carteira {
     private LocalDate dataCriacao;
     private List<Cotista> cotistas;
     private BigDecimal cota;
+    private BigDecimal valorTotal;
+    private LocalDate dataAtualizacaoCota;
 
 }

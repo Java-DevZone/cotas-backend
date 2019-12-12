@@ -14,5 +14,6 @@ public class Ativo {
 
     private String codigo;
     private TipoAtivo tipo;
+    private Integer quantidade;
 
 }
