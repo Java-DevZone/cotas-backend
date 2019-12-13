@@ -102,7 +102,6 @@ public class CotizadorServiceTest {
         Fechamento mgluFechamentoHoje = Fechamento.builder().ticket(mglu3).valor(new BigDecimal(47.25)).build();
 
         // mock
-        LocalDate ontem = LocalDate.now().minus(Period.ofDays(-1));
         when(fechamentoRepository.findByTicket(mglu3, LocalDate.now()))
                 .thenReturn(mgluFechamentoHoje);
         when(fechamentoRepository.findByTicket(vvar3, LocalDate.now()))
@@ -119,6 +118,84 @@ public class CotizadorServiceTest {
         verify(fechamentoRepository, times(1)).findByTicket(mglu3, LocalDate.now());
         verify(fechamentoRepository, times(1)).findByTicket(vvar3, LocalDate.now());
         verify(fechamentoRepository, times(1)).findByTicket(petr4, LocalDate.now());
+    }
+
+    @Test
+    public void given_a_carteira_must_consolidate_more_than_one_stock_with_negative_result_and_return() {
+        Ativo mglu3 = Ativo.builder().codigo("MGLU3").quantidade(300).tipo(TipoAtivo.ACAO).build();
+        Ativo vvar3 = Ativo.builder().codigo("VVAR3").quantidade(500).tipo(TipoAtivo.ACAO).build();
+        Ativo petr4 = Ativo.builder().codigo("PETR4").quantidade(850).tipo(TipoAtivo.ACAO).build();
+
+        Carteira carteira = Carteira.builder()
+                .ativos(Arrays.asList(mglu3, vvar3, petr4))
+                .valorTotal(new BigDecimal(43141.00)).cota(BigDecimal.ONE).build();
+
+        Fechamento mgluFechamentoHoje = Fechamento.builder().ticket(mglu3).valor(new BigDecimal(47.25)).build();
+        Fechamento vvarFechamentoHoje = Fechamento.builder().ticket(vvar3).valor(new BigDecimal(8.25)).build();
+        Fechamento petrFechamentoHoje = Fechamento.builder().ticket(petr4).valor(new BigDecimal(22.66)).build();
+
+        // mock
+        when(fechamentoRepository.findByTicket(mglu3, LocalDate.now()))
+                .thenReturn(mgluFechamentoHoje);
+        when(fechamentoRepository.findByTicket(vvar3, LocalDate.now()))
+                .thenReturn(vvarFechamentoHoje);
+        when(fechamentoRepository.findByTicket(petr4, LocalDate.now()))
+                .thenReturn(petrFechamentoHoje);
+
+        // result
+        Carteira consolidada = carteiraService.consolidar(carteira);
+
+        assertThat(consolidada.getCota())
+                .isEqualTo(new BigDecimal("0.870657").setScale(6, RoundingMode.HALF_UP));
+
+        verify(fechamentoRepository, times(1)).findByTicket(mglu3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByTicket(vvar3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByTicket(petr4, LocalDate.now());
+    }
+
+
+    @Test
+    public void given_a_carteira_must_consolidate_more_than_one_stock_with_result_zero_and_return() {
+        Ativo mglu3 = Ativo.builder().codigo("MGLU3").quantidade(300).tipo(TipoAtivo.ACAO).build(); // 12750
+        Ativo vvar3 = Ativo.builder().codigo("VVAR3").quantidade(500).tipo(TipoAtivo.ACAO).build(); // 4625
+        Ativo petr4 = Ativo.builder().codigo("PETR4").quantidade(850).tipo(TipoAtivo.ACAO).build(); // 25211
+
+        Carteira carteira = Carteira.builder()
+                .ativos(Arrays.asList(mglu3, vvar3, petr4))
+                .valorTotal(new BigDecimal("42586.0")).cota(BigDecimal.ONE).build();
+
+        Fechamento mgluFechamentoHoje = Fechamento.builder().ticket(mglu3).valor(new BigDecimal(42.50)).build();
+        Fechamento vvarFechamentoHoje = Fechamento.builder().ticket(vvar3).valor(new BigDecimal(9.25)).build();
+        Fechamento petrFechamentoHoje = Fechamento.builder().ticket(petr4).valor(new BigDecimal(29.66)).build();
+
+        // mock
+        when(fechamentoRepository.findByTicket(mglu3, LocalDate.now()))
+                .thenReturn(mgluFechamentoHoje);
+        when(fechamentoRepository.findByTicket(vvar3, LocalDate.now()))
+                .thenReturn(vvarFechamentoHoje);
+        when(fechamentoRepository.findByTicket(petr4, LocalDate.now()))
+                .thenReturn(petrFechamentoHoje);
+
+        // result
+        Carteira consolidada = carteiraService.consolidar(carteira);
+
+        assertThat(consolidada.getCota())
+                .isEqualTo(new BigDecimal("1.0").setScale(6, RoundingMode.HALF_UP));
+
+        verify(fechamentoRepository, times(1)).findByTicket(mglu3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByTicket(vvar3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByTicket(petr4, LocalDate.now());
+    }
+
+    @Test
+    public void given_a_carteira_without_stocks_must_consolidate_the_result_and_return() {
+        Carteira carteira = Carteira.builder().ativos(Collections.emptyList()).valorTotal(new BigDecimal(0)).cota(BigDecimal.ONE).build();
+
+        assertThatThrownBy(() -> carteiraService.consolidar(carteira))
+                .isInstanceOf(ValoresDeFechamentoInvalidoException.class)
+                .hasMessage("Não foi possível calcular a variação para os fechamentos 0 e 0");
+
+        verify(fechamentoRepository, times(0)).findByTicket(any(), any());
     }
 
 }

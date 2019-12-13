@@ -28,7 +28,8 @@ public class CarteiraService {
                 .map(ativo -> {
                     Fechamento fechamentoHoje = fechamentoRepository.findByTicket(ativo, LocalDate.now());
                     return fechamentoHoje.getValor().multiply(new BigDecimal(ativo.getQuantidade()), MATH_CONTEXT);
-                }).reduce(BigDecimal::add).get();
+                }).reduce(BigDecimal::add)
+                .orElseGet(() -> BigDecimal.ZERO);
 
         BigDecimal novaCota = calculaCota(carteira, resultadoFinanceiroHoje);
 
