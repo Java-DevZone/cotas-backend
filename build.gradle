@@ -42,6 +42,7 @@ dependencies {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: '2.25.1', ext: 'pom'
 }
 
 test {

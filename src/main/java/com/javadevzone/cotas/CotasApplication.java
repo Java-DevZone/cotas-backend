@@ -10,4 +10,6 @@ public class CotasApplication {
 		SpringApplication.run(CotasApplication.class, args);
 	}
 
+
+
 }

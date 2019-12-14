@@ -13,10 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -43,13 +41,13 @@ public class CotizadorServiceTest {
         final BigDecimal variacaoDoDia = valorDeHoje.subtract(valorDeOntem).divide(valorDeOntem, 6, RoundingMode.HALF_UP);
         final BigDecimal cotaCalculada = carteira.getCota().add(carteira.getCota().multiply(variacaoDoDia));
 
-        when(fechamentoRepository.findByTicket(ticket, LocalDate.now()))
-                .thenReturn(Fechamento.builder().ticket(ticket).valor(valorDeHoje).build());
+        when(fechamentoRepository.findByAtivoAndData(ticket, LocalDate.now()))
+                .thenReturn(Fechamento.builder().ativo(ticket).valor(valorDeHoje).build());
 
         Carteira consolidada = carteiraService.consolidar(carteira);
 
         assertThat(consolidada.getCota()).isEqualTo(cotaCalculada);
-        verify(fechamentoRepository, times(1)).findByTicket(ticket, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(ticket, LocalDate.now());
     }
 
     @Test
@@ -62,13 +60,13 @@ public class CotizadorServiceTest {
         final BigDecimal variacaoDoDia = valorDeHoje.subtract(valorDeOntem).divide(valorDeOntem, 6, RoundingMode.HALF_UP);
         final BigDecimal cotaCalculada = carteira.getCota().add(carteira.getCota().multiply(variacaoDoDia));
 
-        when(fechamentoRepository.findByTicket(ticket, LocalDate.now()))
-                .thenReturn(Fechamento.builder().ticket(ticket).valor(valorDeHoje).build());
+        when(fechamentoRepository.findByAtivoAndData(ticket, LocalDate.now()))
+                .thenReturn(Fechamento.builder().ativo(ticket).valor(valorDeHoje).build());
 
         Carteira consolidada = carteiraService.consolidar(carteira);
 
         assertThat(consolidada.getCota()).isEqualTo(cotaCalculada);
-        verify(fechamentoRepository, times(1)).findByTicket(ticket, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(ticket, LocalDate.now());
     }
 
     @Test
@@ -78,15 +76,15 @@ public class CotizadorServiceTest {
 
         final BigDecimal valorDeHoje = new BigDecimal(42.50);
 
-        when(fechamentoRepository.findByTicket(ticket, LocalDate.now()))
-                .thenReturn(Fechamento.builder().ticket(ticket).valor(valorDeHoje).build());
+        when(fechamentoRepository.findByAtivoAndData(ticket, LocalDate.now()))
+                .thenReturn(Fechamento.builder().ativo(ticket).valor(valorDeHoje).build());
 
         assertThatThrownBy(() -> carteiraService.consolidar(carteira))
             .isInstanceOf(ValoresDeFechamentoInvalidoException.class)
             .hasMessage("Não foi possível calcular a variação para os fechamentos "
                     + valorDeHoje.multiply(new BigDecimal(ticket.getQuantidade())) + " e " + carteira.getValorTotal());
 
-        verify(fechamentoRepository, times(1)).findByTicket(ticket, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(ticket, LocalDate.now());
     }
 
     @Test
@@ -97,16 +95,16 @@ public class CotizadorServiceTest {
 
         Carteira carteira = Carteira.builder().ativos(Arrays.asList(mglu3, vvar3, petr4)).valorTotal(new BigDecimal(43141.00)).cota(BigDecimal.ONE).build();
 
-        Fechamento petrFechamentoHoje = Fechamento.builder().ticket(petr4).valor(new BigDecimal(29.66)).build();
-        Fechamento vvarFechamentoHoje = Fechamento.builder().ticket(vvar3).valor(new BigDecimal(10.25)).build();
-        Fechamento mgluFechamentoHoje = Fechamento.builder().ticket(mglu3).valor(new BigDecimal(47.25)).build();
+        Fechamento petrFechamentoHoje = Fechamento.builder().ativo(petr4).valor(new BigDecimal(29.66)).build();
+        Fechamento vvarFechamentoHoje = Fechamento.builder().ativo(vvar3).valor(new BigDecimal(10.25)).build();
+        Fechamento mgluFechamentoHoje = Fechamento.builder().ativo(mglu3).valor(new BigDecimal(47.25)).build();
 
         // mock
-        when(fechamentoRepository.findByTicket(mglu3, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(mglu3, LocalDate.now()))
                 .thenReturn(mgluFechamentoHoje);
-        when(fechamentoRepository.findByTicket(vvar3, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(vvar3, LocalDate.now()))
                 .thenReturn(vvarFechamentoHoje);
-        when(fechamentoRepository.findByTicket(petr4, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(petr4, LocalDate.now()))
                 .thenReturn(petrFechamentoHoje);
 
         // result
@@ -115,9 +113,9 @@ public class CotizadorServiceTest {
         assertThat(consolidada.getCota())
                 .isEqualTo(new BigDecimal(1.031756).setScale(6, RoundingMode.HALF_UP));
 
-        verify(fechamentoRepository, times(1)).findByTicket(mglu3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByTicket(vvar3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByTicket(petr4, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(mglu3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(vvar3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(petr4, LocalDate.now());
     }
 
     @Test
@@ -130,16 +128,16 @@ public class CotizadorServiceTest {
                 .ativos(Arrays.asList(mglu3, vvar3, petr4))
                 .valorTotal(new BigDecimal(43141.00)).cota(BigDecimal.ONE).build();
 
-        Fechamento mgluFechamentoHoje = Fechamento.builder().ticket(mglu3).valor(new BigDecimal(47.25)).build();
-        Fechamento vvarFechamentoHoje = Fechamento.builder().ticket(vvar3).valor(new BigDecimal(8.25)).build();
-        Fechamento petrFechamentoHoje = Fechamento.builder().ticket(petr4).valor(new BigDecimal(22.66)).build();
+        Fechamento mgluFechamentoHoje = Fechamento.builder().ativo(mglu3).valor(new BigDecimal(47.25)).build();
+        Fechamento vvarFechamentoHoje = Fechamento.builder().ativo(vvar3).valor(new BigDecimal(8.25)).build();
+        Fechamento petrFechamentoHoje = Fechamento.builder().ativo(petr4).valor(new BigDecimal(22.66)).build();
 
         // mock
-        when(fechamentoRepository.findByTicket(mglu3, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(mglu3, LocalDate.now()))
                 .thenReturn(mgluFechamentoHoje);
-        when(fechamentoRepository.findByTicket(vvar3, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(vvar3, LocalDate.now()))
                 .thenReturn(vvarFechamentoHoje);
-        when(fechamentoRepository.findByTicket(petr4, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(petr4, LocalDate.now()))
                 .thenReturn(petrFechamentoHoje);
 
         // result
@@ -148,9 +146,9 @@ public class CotizadorServiceTest {
         assertThat(consolidada.getCota())
                 .isEqualTo(new BigDecimal("0.870657").setScale(6, RoundingMode.HALF_UP));
 
-        verify(fechamentoRepository, times(1)).findByTicket(mglu3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByTicket(vvar3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByTicket(petr4, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(mglu3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(vvar3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(petr4, LocalDate.now());
     }
 
 
@@ -164,16 +162,16 @@ public class CotizadorServiceTest {
                 .ativos(Arrays.asList(mglu3, vvar3, petr4))
                 .valorTotal(new BigDecimal("42586.0")).cota(BigDecimal.ONE).build();
 
-        Fechamento mgluFechamentoHoje = Fechamento.builder().ticket(mglu3).valor(new BigDecimal(42.50)).build();
-        Fechamento vvarFechamentoHoje = Fechamento.builder().ticket(vvar3).valor(new BigDecimal(9.25)).build();
-        Fechamento petrFechamentoHoje = Fechamento.builder().ticket(petr4).valor(new BigDecimal(29.66)).build();
+        Fechamento mgluFechamentoHoje = Fechamento.builder().ativo(mglu3).valor(new BigDecimal(42.50)).build();
+        Fechamento vvarFechamentoHoje = Fechamento.builder().ativo(vvar3).valor(new BigDecimal(9.25)).build();
+        Fechamento petrFechamentoHoje = Fechamento.builder().ativo(petr4).valor(new BigDecimal(29.66)).build();
 
         // mock
-        when(fechamentoRepository.findByTicket(mglu3, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(mglu3, LocalDate.now()))
                 .thenReturn(mgluFechamentoHoje);
-        when(fechamentoRepository.findByTicket(vvar3, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(vvar3, LocalDate.now()))
                 .thenReturn(vvarFechamentoHoje);
-        when(fechamentoRepository.findByTicket(petr4, LocalDate.now()))
+        when(fechamentoRepository.findByAtivoAndData(petr4, LocalDate.now()))
                 .thenReturn(petrFechamentoHoje);
 
         // result
@@ -182,9 +180,9 @@ public class CotizadorServiceTest {
         assertThat(consolidada.getCota())
                 .isEqualTo(new BigDecimal("1.0").setScale(6, RoundingMode.HALF_UP));
 
-        verify(fechamentoRepository, times(1)).findByTicket(mglu3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByTicket(vvar3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByTicket(petr4, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(mglu3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(vvar3, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAtivoAndData(petr4, LocalDate.now());
     }
 
     @Test
@@ -195,7 +193,7 @@ public class CotizadorServiceTest {
                 .isInstanceOf(ValoresDeFechamentoInvalidoException.class)
                 .hasMessage("Não foi possível calcular a variação para os fechamentos 0 e 0");
 
-        verify(fechamentoRepository, times(0)).findByTicket(any(), any());
+        verify(fechamentoRepository, times(0)).findByAtivoAndData(any(), any());
     }
 
 }

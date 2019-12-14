@@ -5,6 +5,7 @@ import com.javadevzone.cotas.entity.Fechamento;
 import com.javadevzone.cotas.exceptions.ValoresDeFechamentoInvalidoException;
 import com.javadevzone.cotas.repository.FechamentoRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class CarteiraService {
 
@@ -26,7 +27,7 @@ public class CarteiraService {
         BigDecimal resultadoFinanceiroHoje = carteira.getAtivos()
                 .stream()
                 .map(ativo -> {
-                    Fechamento fechamentoHoje = fechamentoRepository.findByTicket(ativo, LocalDate.now());
+                    Fechamento fechamentoHoje = fechamentoRepository.findByAtivoAndData(ativo, LocalDate.now());
                     return fechamentoHoje.getValor().multiply(new BigDecimal(ativo.getQuantidade()), MATH_CONTEXT);
                 }).reduce(BigDecimal::add)
                 .orElseGet(() -> BigDecimal.ZERO);
