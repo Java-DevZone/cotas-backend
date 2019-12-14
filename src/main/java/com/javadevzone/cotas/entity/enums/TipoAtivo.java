@@ -6,6 +6,6 @@ public enum TipoAtivo {
     FUNDO,
     TESOURODIRETO,
     CDB,
-    DEBENTURES
+    DEBENTURES;
 
 }
