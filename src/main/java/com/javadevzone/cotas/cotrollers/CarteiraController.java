@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @ResponseBody
 public class CarteiraController {
 
-    private CarteiraService carteiraService;
+    private final CarteiraService carteiraService;
 
 
 
