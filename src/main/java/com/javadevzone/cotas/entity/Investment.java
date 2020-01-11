@@ -6,18 +6,18 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
-public class Aporte {
+public class Investment {
 
     @Id
     private Long id;
-    private BigDecimal valor;
-    private LocalDate data;
+    private BigDecimal value;
+    private LocalDateTime dateTime;
 
     @ManyToOne
-    private Cotista cotista;
+    private QuotaHolder quotaHolder;
 
 }

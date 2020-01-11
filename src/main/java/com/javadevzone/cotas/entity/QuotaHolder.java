@@ -6,19 +6,19 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
-public class Cotista {
+public class QuotaHolder {
 
     @Id
     private Long id;
     private String name;
-    @OneToMany(mappedBy = "cotista")
-    private List<Aporte> aportes;
+    private LocalDate optInAt;
+    private LocalDate optOutAt;
 
-    private LocalDate dataEntrada;
-    private LocalDate dataSaida;
+    @OneToMany(mappedBy = "quotaHolder")
+    private Set<Investment> investments;
 
 }

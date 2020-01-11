@@ -43,6 +43,7 @@ dependencies {
 	}
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 	testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: '2.25.1', ext: 'pom'
+	testCompile group: 'com.h2database', name: 'h2', version: '1.4.200'
 }
 
 test {

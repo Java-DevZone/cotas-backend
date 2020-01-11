@@ -1,21 +1,21 @@
 package com.javadevzone.cotas.services;
 
-import com.javadevzone.cotas.entity.Ativo;
-import com.javadevzone.cotas.entity.Carteira;
-import com.javadevzone.cotas.entity.Fechamento;
-import com.javadevzone.cotas.entity.enums.TipoAtivo;
+import com.javadevzone.cotas.entity.Asset;
+import com.javadevzone.cotas.entity.AssetHistory;
+import com.javadevzone.cotas.entity.Wallet;
+import com.javadevzone.cotas.entity.enums.AssetType;
 import com.javadevzone.cotas.exceptions.ValoresDeFechamentoInvalidoException;
 import com.javadevzone.cotas.repository.FechamentoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.internal.util.collections.Sets;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.util.Arrays;
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,174 +26,174 @@ import static org.mockito.Mockito.*;
 public class CotizadorServiceTest {
 
     @InjectMocks
-    private CarteiraService carteiraService;
+    private WalletService walletService;
 
     @Mock
     private FechamentoRepository fechamentoRepository;
 
     @Test
-    public void given_a_carteira_must_consolidate_a_positive_result_and_return() {
-        Ativo ticket = Ativo.builder().codigo("MGLU3").quantidade(100).tipo(TipoAtivo.ACAO).build();
-        Carteira carteira = Carteira.builder().ativos(Collections.singletonList(ticket)).valorTotal(new BigDecimal(4250)).cota(BigDecimal.ONE).build();
+    public void given_a_wallet_must_consolidate_a_positive_result_and_return() {
+        Asset asset = Asset.builder().ticket("MGLU3").quantity(100).type(AssetType.ACAO).build();
+        Wallet wallet = Wallet.builder().assets(Collections.singleton(asset)).totalValue(new BigDecimal(4250)).quota(BigDecimal.ONE).build();
 
-        final BigDecimal valorDeOntem = new BigDecimal(42.50);
-        final BigDecimal valorDeHoje = new BigDecimal(45.50);
-        final BigDecimal variacaoDoDia = valorDeHoje.subtract(valorDeOntem).divide(valorDeOntem, 6, RoundingMode.HALF_UP);
-        final BigDecimal cotaCalculada = carteira.getCota().add(carteira.getCota().multiply(variacaoDoDia));
+        final BigDecimal valueDeOntem = new BigDecimal("42.50");
+        final BigDecimal valueDeHoje = new BigDecimal("45.50");
+        final BigDecimal variacaoDoDia = valueDeHoje.subtract(valueDeOntem).divide(valueDeOntem, 6, RoundingMode.HALF_UP);
+        final BigDecimal quotaCalculada = wallet.getQuota().add(wallet.getQuota().multiply(variacaoDoDia));
 
-        when(fechamentoRepository.findByAtivoAndData(ticket, LocalDate.now()))
-                .thenReturn(Fechamento.builder().ativo(ticket).valor(valorDeHoje).build());
+        when(fechamentoRepository.findByAssetAndDateTime(eq(asset), any(LocalDateTime.class)))
+                .thenReturn(AssetHistory.builder().asset(asset).value(valueDeHoje).build());
 
-        Carteira consolidada = carteiraService.consolidar(carteira);
+        Wallet consolidada = walletService.consolidar(wallet);
 
-        assertThat(consolidada.getCota()).isEqualTo(cotaCalculada);
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(ticket, LocalDate.now());
+        assertThat(consolidada.getQuota()).isEqualTo(quotaCalculada);
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(asset), any(LocalDateTime.class));
     }
 
     @Test
-    public void given_a_carteira_must_consolidate_a_negative_result_and_return() {
-        Ativo ticket = Ativo.builder().codigo("MGLU3").quantidade(100).tipo(TipoAtivo.ACAO).build();
-        Carteira carteira = Carteira.builder().ativos(Collections.singletonList(ticket)).valorTotal(BigDecimal.valueOf(4550)).cota(BigDecimal.ONE).build();
+    public void given_a_wallet_must_consolidate_a_negative_result_and_return() {
+        Asset ticket = Asset.builder().ticket("MGLU3").quantity(100).type(AssetType.ACAO).build();
+        Wallet wallet = Wallet.builder().assets(Collections.singleton(ticket)).totalValue(BigDecimal.valueOf(4550)).quota(BigDecimal.ONE).build();
 
-        final BigDecimal valorDeOntem = new BigDecimal(45.50);
-        final BigDecimal valorDeHoje = new BigDecimal(42.50);
-        final BigDecimal variacaoDoDia = valorDeHoje.subtract(valorDeOntem).divide(valorDeOntem, 6, RoundingMode.HALF_UP);
-        final BigDecimal cotaCalculada = carteira.getCota().add(carteira.getCota().multiply(variacaoDoDia));
+        final BigDecimal valueDeOntem = new BigDecimal("45.50");
+        final BigDecimal valueDeHoje = new BigDecimal("42.50");
+        final BigDecimal variacaoDoDia = valueDeHoje.subtract(valueDeOntem).divide(valueDeOntem, 6, RoundingMode.HALF_UP);
+        final BigDecimal quotaCalculada = wallet.getQuota().add(wallet.getQuota().multiply(variacaoDoDia));
 
-        when(fechamentoRepository.findByAtivoAndData(ticket, LocalDate.now()))
-                .thenReturn(Fechamento.builder().ativo(ticket).valor(valorDeHoje).build());
+        when(fechamentoRepository.findByAssetAndDateTime(eq(ticket), any(LocalDateTime.class)))
+                .thenReturn(AssetHistory.builder().asset(ticket).value(valueDeHoje).build());
 
-        Carteira consolidada = carteiraService.consolidar(carteira);
+        Wallet consolidada = walletService.consolidar(wallet);
 
-        assertThat(consolidada.getCota()).isEqualTo(cotaCalculada);
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(ticket, LocalDate.now());
+        assertThat(consolidada.getQuota()).isEqualTo(quotaCalculada);
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(ticket), any(LocalDateTime.class));
     }
 
     @Test
-    public void given_a_carteira_must_throw_exception_when_divided_by_zero() {
-        Ativo ticket = Ativo.builder().codigo("MGLU3").quantidade(100).tipo(TipoAtivo.ACAO).build();
-        Carteira carteira = Carteira.builder().ativos(Collections.singletonList(ticket)).valorTotal(BigDecimal.valueOf(0)).cota(BigDecimal.ONE).build();
+    public void given_a_wallet_must_throw_exception_when_divided_by_zero() {
+        Asset ticket = Asset.builder().ticket("MGLU3").quantity(100).type(AssetType.ACAO).build();
+        Wallet wallet = Wallet.builder().assets(Collections.singleton(ticket)).totalValue(BigDecimal.valueOf(0)).quota(BigDecimal.ONE).build();
 
-        final BigDecimal valorDeHoje = new BigDecimal(42.50);
+        final BigDecimal valueDeHoje = new BigDecimal("42.50");
 
-        when(fechamentoRepository.findByAtivoAndData(ticket, LocalDate.now()))
-                .thenReturn(Fechamento.builder().ativo(ticket).valor(valorDeHoje).build());
+        when(fechamentoRepository.findByAssetAndDateTime(eq(ticket), any(LocalDateTime.class)))
+                .thenReturn(AssetHistory.builder().asset(ticket).value(valueDeHoje).build());
 
-        assertThatThrownBy(() -> carteiraService.consolidar(carteira))
+        assertThatThrownBy(() -> walletService.consolidar(wallet))
             .isInstanceOf(ValoresDeFechamentoInvalidoException.class)
             .hasMessage("Não foi possível calcular a variação para os fechamentos "
-                    + valorDeHoje.multiply(new BigDecimal(ticket.getQuantidade())) + " e " + carteira.getValorTotal());
+                    + valueDeHoje.multiply(new BigDecimal(ticket.getQuantity())) + " e " + wallet.getTotalValue());
 
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(ticket, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(ticket), any(LocalDateTime.class));
     }
 
     @Test
-    public void given_a_carteira_must_consolidate_more_than_one_stock_with_positive_result_and_return() {
-        Ativo mglu3 = Ativo.builder().codigo("MGLU3").quantidade(300).tipo(TipoAtivo.ACAO).build();
-        Ativo vvar3 = Ativo.builder().codigo("VVAR3").quantidade(500).tipo(TipoAtivo.ACAO).build();
-        Ativo petr4 = Ativo.builder().codigo("PETR4").quantidade(850).tipo(TipoAtivo.ACAO).build();
+    public void given_a_wallet_must_consolidate_more_than_one_stock_with_positive_result_and_return() {
+        Asset mglu3 = Asset.builder().ticket("MGLU3").quantity(300).type(AssetType.ACAO).build();
+        Asset vvar3 = Asset.builder().ticket("VVAR3").quantity(500).type(AssetType.ACAO).build();
+        Asset petr4 = Asset.builder().ticket("PETR4").quantity(850).type(AssetType.ACAO).build();
 
-        Carteira carteira = Carteira.builder().ativos(Arrays.asList(mglu3, vvar3, petr4)).valorTotal(new BigDecimal(43141.00)).cota(BigDecimal.ONE).build();
+        Wallet wallet = Wallet.builder().assets(Sets.newSet(mglu3, vvar3, petr4)).totalValue(new BigDecimal("43141.00")).quota(BigDecimal.ONE).build();
 
-        Fechamento petrFechamentoHoje = Fechamento.builder().ativo(petr4).valor(new BigDecimal(29.66)).build();
-        Fechamento vvarFechamentoHoje = Fechamento.builder().ativo(vvar3).valor(new BigDecimal(10.25)).build();
-        Fechamento mgluFechamentoHoje = Fechamento.builder().ativo(mglu3).valor(new BigDecimal(47.25)).build();
+        AssetHistory petrAssetHistoryHoje = AssetHistory.builder().asset(petr4).value(new BigDecimal("29.66")).build();
+        AssetHistory vvarAssetHistoryHoje = AssetHistory.builder().asset(vvar3).value(new BigDecimal("10.25")).build();
+        AssetHistory mgluAssetHistoryHoje = AssetHistory.builder().asset(mglu3).value(new BigDecimal("47.25")).build();
 
         // mock
-        when(fechamentoRepository.findByAtivoAndData(mglu3, LocalDate.now()))
-                .thenReturn(mgluFechamentoHoje);
-        when(fechamentoRepository.findByAtivoAndData(vvar3, LocalDate.now()))
-                .thenReturn(vvarFechamentoHoje);
-        when(fechamentoRepository.findByAtivoAndData(petr4, LocalDate.now()))
-                .thenReturn(petrFechamentoHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(mglu3), any(LocalDateTime.class)))
+                .thenReturn(mgluAssetHistoryHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(vvar3), any(LocalDateTime.class)))
+                .thenReturn(vvarAssetHistoryHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(petr4), any(LocalDateTime.class)))
+                .thenReturn(petrAssetHistoryHoje);
 
         // result
-        Carteira consolidada = carteiraService.consolidar(carteira);
+        Wallet consolidada = walletService.consolidar(wallet);
 
-        assertThat(consolidada.getCota())
-                .isEqualTo(new BigDecimal(1.031756).setScale(6, RoundingMode.HALF_UP));
+        assertThat(consolidada.getQuota())
+                .isEqualTo(new BigDecimal("1.031756").setScale(6, RoundingMode.HALF_UP));
 
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(mglu3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(vvar3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(petr4, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(mglu3), any(LocalDateTime.class));
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(vvar3), any(LocalDateTime.class));
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(petr4), any(LocalDateTime.class));
     }
 
     @Test
-    public void given_a_carteira_must_consolidate_more_than_one_stock_with_negative_result_and_return() {
-        Ativo mglu3 = Ativo.builder().codigo("MGLU3").quantidade(300).tipo(TipoAtivo.ACAO).build();
-        Ativo vvar3 = Ativo.builder().codigo("VVAR3").quantidade(500).tipo(TipoAtivo.ACAO).build();
-        Ativo petr4 = Ativo.builder().codigo("PETR4").quantidade(850).tipo(TipoAtivo.ACAO).build();
+    public void given_a_wallet_must_consolidate_more_than_one_stock_with_negative_result_and_return() {
+        Asset mglu3 = Asset.builder().ticket("MGLU3").quantity(300).type(AssetType.ACAO).build();
+        Asset vvar3 = Asset.builder().ticket("VVAR3").quantity(500).type(AssetType.ACAO).build();
+        Asset petr4 = Asset.builder().ticket("PETR4").quantity(850).type(AssetType.ACAO).build();
 
-        Carteira carteira = Carteira.builder()
-                .ativos(Arrays.asList(mglu3, vvar3, petr4))
-                .valorTotal(new BigDecimal(43141.00)).cota(BigDecimal.ONE).build();
+        Wallet wallet = Wallet.builder()
+                .assets(Sets.newSet(mglu3, vvar3, petr4))
+                .totalValue(new BigDecimal("43141.00")).quota(BigDecimal.ONE).build();
 
-        Fechamento mgluFechamentoHoje = Fechamento.builder().ativo(mglu3).valor(new BigDecimal(47.25)).build();
-        Fechamento vvarFechamentoHoje = Fechamento.builder().ativo(vvar3).valor(new BigDecimal(8.25)).build();
-        Fechamento petrFechamentoHoje = Fechamento.builder().ativo(petr4).valor(new BigDecimal(22.66)).build();
+        AssetHistory mgluAssetHistoryHoje = AssetHistory.builder().asset(mglu3).value(new BigDecimal("47.25")).build();
+        AssetHistory vvarAssetHistoryHoje = AssetHistory.builder().asset(vvar3).value(new BigDecimal("8.25")).build();
+        AssetHistory petrAssetHistoryHoje = AssetHistory.builder().asset(petr4).value(new BigDecimal("22.66")).build();
 
         // mock
-        when(fechamentoRepository.findByAtivoAndData(mglu3, LocalDate.now()))
-                .thenReturn(mgluFechamentoHoje);
-        when(fechamentoRepository.findByAtivoAndData(vvar3, LocalDate.now()))
-                .thenReturn(vvarFechamentoHoje);
-        when(fechamentoRepository.findByAtivoAndData(petr4, LocalDate.now()))
-                .thenReturn(petrFechamentoHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(mglu3), any(LocalDateTime.class)))
+                .thenReturn(mgluAssetHistoryHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(vvar3), any(LocalDateTime.class)))
+                .thenReturn(vvarAssetHistoryHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(petr4), any(LocalDateTime.class)))
+                .thenReturn(petrAssetHistoryHoje);
 
         // result
-        Carteira consolidada = carteiraService.consolidar(carteira);
+        Wallet consolidada = walletService.consolidar(wallet);
 
-        assertThat(consolidada.getCota())
+        assertThat(consolidada.getQuota())
                 .isEqualTo(new BigDecimal("0.870657").setScale(6, RoundingMode.HALF_UP));
 
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(mglu3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(vvar3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(petr4, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(mglu3), any(LocalDateTime.class));
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(vvar3), any(LocalDateTime.class));
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(petr4), any(LocalDateTime.class));
     }
 
 
     @Test
-    public void given_a_carteira_must_consolidate_more_than_one_stock_with_result_zero_and_return() {
-        Ativo mglu3 = Ativo.builder().codigo("MGLU3").quantidade(300).tipo(TipoAtivo.ACAO).build(); // 12750
-        Ativo vvar3 = Ativo.builder().codigo("VVAR3").quantidade(500).tipo(TipoAtivo.ACAO).build(); // 4625
-        Ativo petr4 = Ativo.builder().codigo("PETR4").quantidade(850).tipo(TipoAtivo.ACAO).build(); // 25211
+    public void given_a_wallet_must_consolidate_more_than_one_stock_with_result_zero_and_return() {
+        Asset mglu3 = Asset.builder().ticket("MGLU3").quantity(300).type(AssetType.ACAO).build(); // 12750
+        Asset vvar3 = Asset.builder().ticket("VVAR3").quantity(500).type(AssetType.ACAO).build(); // 4625
+        Asset petr4 = Asset.builder().ticket("PETR4").quantity(850).type(AssetType.ACAO).build(); // 25211
 
-        Carteira carteira = Carteira.builder()
-                .ativos(Arrays.asList(mglu3, vvar3, petr4))
-                .valorTotal(new BigDecimal("42586.0")).cota(BigDecimal.ONE).build();
+        Wallet wallet = Wallet.builder()
+                .assets(Sets.newSet(mglu3, vvar3, petr4))
+                .totalValue(new BigDecimal("42586.0")).quota(BigDecimal.ONE).build();
 
-        Fechamento mgluFechamentoHoje = Fechamento.builder().ativo(mglu3).valor(new BigDecimal(42.50)).build();
-        Fechamento vvarFechamentoHoje = Fechamento.builder().ativo(vvar3).valor(new BigDecimal(9.25)).build();
-        Fechamento petrFechamentoHoje = Fechamento.builder().ativo(petr4).valor(new BigDecimal(29.66)).build();
+        AssetHistory mgluAssetHistoryHoje = AssetHistory.builder().asset(mglu3).value(new BigDecimal("42.50")).build();
+        AssetHistory vvarAssetHistoryHoje = AssetHistory.builder().asset(vvar3).value(new BigDecimal("9.25")).build();
+        AssetHistory petrAssetHistoryHoje = AssetHistory.builder().asset(petr4).value(new BigDecimal("29.66")).build();
 
         // mock
-        when(fechamentoRepository.findByAtivoAndData(mglu3, LocalDate.now()))
-                .thenReturn(mgluFechamentoHoje);
-        when(fechamentoRepository.findByAtivoAndData(vvar3, LocalDate.now()))
-                .thenReturn(vvarFechamentoHoje);
-        when(fechamentoRepository.findByAtivoAndData(petr4, LocalDate.now()))
-                .thenReturn(petrFechamentoHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(mglu3), any(LocalDateTime.class)))
+                .thenReturn(mgluAssetHistoryHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(vvar3), any(LocalDateTime.class)))
+                .thenReturn(vvarAssetHistoryHoje);
+        when(fechamentoRepository.findByAssetAndDateTime(eq(petr4), any(LocalDateTime.class)))
+                .thenReturn(petrAssetHistoryHoje);
 
         // result
-        Carteira consolidada = carteiraService.consolidar(carteira);
+        Wallet consolidada = walletService.consolidar(wallet);
 
-        assertThat(consolidada.getCota())
+        assertThat(consolidada.getQuota())
                 .isEqualTo(new BigDecimal("1.0").setScale(6, RoundingMode.HALF_UP));
 
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(mglu3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(vvar3, LocalDate.now());
-        verify(fechamentoRepository, times(1)).findByAtivoAndData(petr4, LocalDate.now());
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(mglu3), any(LocalDateTime.class));
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(vvar3), any(LocalDateTime.class));
+        verify(fechamentoRepository, times(1)).findByAssetAndDateTime(eq(petr4), any(LocalDateTime.class));
     }
 
     @Test
-    public void given_a_carteira_without_stocks_must_consolidate_the_result_and_return() {
-        Carteira carteira = Carteira.builder().ativos(Collections.emptyList()).valorTotal(new BigDecimal(0)).cota(BigDecimal.ONE).build();
+    public void given_a_wallet_without_stocks_must_consolidate_the_result_and_return() {
+        Wallet wallet = Wallet.builder().assets(Collections.emptySet()).totalValue(BigDecimal.ZERO).quota(BigDecimal.ONE).build();
 
-        assertThatThrownBy(() -> carteiraService.consolidar(carteira))
+        assertThatThrownBy(() -> walletService.consolidar(wallet))
                 .isInstanceOf(ValoresDeFechamentoInvalidoException.class)
                 .hasMessage("Não foi possível calcular a variação para os fechamentos 0 e 0");
 
-        verify(fechamentoRepository, times(0)).findByAtivoAndData(any(), any());
+        verify(fechamentoRepository, times(0)).findByAssetAndDateTime(any(), any());
     }
 
 }

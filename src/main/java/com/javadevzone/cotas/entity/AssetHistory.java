@@ -9,23 +9,22 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-public class Fechamento {
+public class AssetHistory {
 
     @Id
     private Long id;
+    private BigDecimal value;
+    private LocalDateTime dateTime;
 
     @OneToOne
-    private Ativo ativo;
-
-    private BigDecimal valor;
-    private LocalDate data;
+    private Asset asset;
 
 }
 

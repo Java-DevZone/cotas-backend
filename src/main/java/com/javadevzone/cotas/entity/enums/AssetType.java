@@ -1,6 +1,6 @@
 package com.javadevzone.cotas.entity.enums;
 
-public enum TipoAtivo {
+public enum AssetType {
 
     ACAO,
     FUNDO,

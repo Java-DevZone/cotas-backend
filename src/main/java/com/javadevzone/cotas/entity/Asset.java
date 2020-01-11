@@ -1,6 +1,6 @@
 package com.javadevzone.cotas.entity;
 
-import com.javadevzone.cotas.entity.enums.TipoAtivo;
+import com.javadevzone.cotas.entity.enums.AssetType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,14 +16,14 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @Builder
 @Entity
-public class Ativo {
+public class Asset {
 
     @Id
-    private String codigo;
+    private String ticket;
 
     @Enumerated(EnumType.STRING)
-    private TipoAtivo tipo;
+    private AssetType type;
 
-    private Integer quantidade;
+    private Integer quantity;
 
 }
