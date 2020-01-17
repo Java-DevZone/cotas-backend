@@ -24,6 +24,4 @@ public class Asset {
     @Enumerated(EnumType.STRING)
     private AssetType type;
 
-    private Integer quantity;
-
 }

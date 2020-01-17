@@ -3,7 +3,7 @@ package com.javadevzone.cotas.services;
 import com.javadevzone.cotas.entity.AssetHistory;
 import com.javadevzone.cotas.entity.Wallet;
 import com.javadevzone.cotas.exceptions.ValoresDeFechamentoInvalidoException;
-import com.javadevzone.cotas.repository.FechamentoRepository;
+import com.javadevzone.cotas.repository.AssetHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -19,16 +18,16 @@ import java.time.LocalDateTime;
 @Slf4j
 public class WalletService {
 
-    private FechamentoRepository fechamentoRepository;
+    private final AssetHistoryRepository assetHistoryRepository;
 
     private final static MathContext MATH_CONTEXT = new MathContext(6, RoundingMode.HALF_UP);
 
     public Wallet consolidar(Wallet wallet) {
-        BigDecimal resultadoFinanceiroHoje = wallet.getAssets()
+        BigDecimal resultadoFinanceiroHoje = wallet.getInvestments()
                 .stream()
-                .map(ativo -> {
-                    AssetHistory fechamentoHoje = fechamentoRepository.findByAssetAndDateTime(ativo, LocalDateTime.now());
-                    return fechamentoHoje.getValue().multiply(new BigDecimal(ativo.getQuantity()), MATH_CONTEXT);
+                .map(investment -> {
+                    AssetHistory fechamentoHoje = assetHistoryRepository.findByAssetAndDateTime(investment.getAsset(), LocalDateTime.now());
+                    return fechamentoHoje.getValue().multiply(new BigDecimal(investment.getQuantity()), MATH_CONTEXT);
                 }).reduce(BigDecimal::add)
                 .orElse(BigDecimal.ZERO);
 

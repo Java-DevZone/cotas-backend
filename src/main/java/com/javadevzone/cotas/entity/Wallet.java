@@ -1,5 +1,6 @@
 package com.javadevzone.cotas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,10 +29,11 @@ public class Wallet {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @OneToMany
-    private Set<Asset> assets;
+    @OneToMany(mappedBy = "wallet")
+    private Set<Investment> investments;
 
-    @OneToMany
+    @OneToMany(mappedBy = "wallet")
+    @JsonIgnore
     private Set<QuotaHolder> quotaHolders;
 
 }

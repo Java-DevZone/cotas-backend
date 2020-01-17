@@ -8,7 +8,7 @@ docker run -d --rm --name mysql-server -p 3306:3306 -e MYSQL_ROOT_PASSWORD=12345
 
 ## Criar/Atualizar a base de dados
 ```
-mvn flyway:migrate
+./gradlew flyway:migrate
 ```
 
 Novo código comitado!

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 
 @Repository
-public interface FechamentoRepository extends CrudRepository<AssetHistory, Long> {
+public interface AssetHistoryRepository extends CrudRepository<AssetHistory, Long> {
 
     AssetHistory findByAssetAndDateTime(Asset asset, LocalDateTime dateTime);
 
