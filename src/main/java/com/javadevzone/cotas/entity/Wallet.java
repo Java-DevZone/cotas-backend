@@ -1,5 +1,6 @@
 package com.javadevzone.cotas.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,11 +30,12 @@ public class Wallet {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @JsonBackReference
     @OneToMany(mappedBy = "wallet")
     private Set<Investment> investments;
 
-    @OneToMany(mappedBy = "wallet")
     @JsonIgnore
+    @OneToMany(mappedBy = "wallet")
     private Set<QuotaHolder> quotaHolders;
 
 }

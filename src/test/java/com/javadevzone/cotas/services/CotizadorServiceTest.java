@@ -47,9 +47,9 @@ public class CotizadorServiceTest {
         mglu3 = Asset.builder().ticket("MGLU3").type(AssetType.ACAO).build();
         vvar3 = Asset.builder().ticket("VVAR3").type(AssetType.ACAO).build();
         petr4 = Asset.builder().ticket("PETR4").type(AssetType.ACAO).build();
-        investmentMglu = Investment.builder().quantity(300L).dateTime(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
-        investmentVvar = Investment.builder().quantity(500L).dateTime(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
-        investmentPetr = Investment.builder().quantity(850L).dateTime(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
+        investmentMglu = Investment.builder().quantity(300L).createdAt(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
+        investmentVvar = Investment.builder().quantity(500L).createdAt(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
+        investmentPetr = Investment.builder().quantity(850L).createdAt(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
 
         wallet = Wallet.builder().investments(Sets.newSet(investmentMglu, investmentVvar, investmentPetr)).totalValue(new BigDecimal("43141.00")).quota(BigDecimal.ONE).build();
     }
@@ -57,7 +57,7 @@ public class CotizadorServiceTest {
     @Test
     public void given_a_wallet_must_consolidate_a_positive_result_and_return() {
         Asset asset = Asset.builder().ticket("MGLU3").type(AssetType.ACAO).build();
-        Investment investment = Investment.builder().quantity(100L).dateTime(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
+        Investment investment = Investment.builder().quantity(100L).createdAt(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
         Wallet wallet = Wallet.builder().investments(Collections.singleton(investment)).totalValue(new BigDecimal(4250)).quota(BigDecimal.ONE).build();
 
         final BigDecimal valueDeOntem = new BigDecimal("42.50");
@@ -77,7 +77,7 @@ public class CotizadorServiceTest {
     @Test
     public void given_a_wallet_must_consolidate_a_negative_result_and_return() {
         Asset ticket = Asset.builder().ticket("MGLU3").type(AssetType.ACAO).build();
-        Investment investment = Investment.builder().quantity(100L).dateTime(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
+        Investment investment = Investment.builder().quantity(100L).createdAt(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
         Wallet wallet = Wallet.builder().investments(Collections.singleton(investment)).totalValue(BigDecimal.valueOf(4550)).quota(BigDecimal.ONE).build();
 
         final BigDecimal valueDeOntem = new BigDecimal("45.50");
@@ -97,7 +97,7 @@ public class CotizadorServiceTest {
     @Test
     public void given_a_wallet_must_throw_exception_when_divided_by_zero() {
         Asset ticket = Asset.builder().ticket("MGLU3").type(AssetType.ACAO).build();
-        Investment investment = Investment.builder().quantity(100L).dateTime(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
+        Investment investment = Investment.builder().quantity(100L).createdAt(LocalDateTime.now()).value(new BigDecimal("42.50")).build();
         Wallet wallet = Wallet.builder().investments(Collections.singleton(investment)).totalValue(BigDecimal.valueOf(4550)).quota(BigDecimal.ONE).build();
 
         final BigDecimal valueDeHoje = new BigDecimal("42.50");

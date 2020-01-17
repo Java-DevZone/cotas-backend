@@ -33,6 +33,7 @@ CREATE TABLE investment (
     updated_at TIMESTAMP,
     asset_ticket VARCHAR(100),
     wallet_id MEDIUMINT,
+    quota_holder_id MEDIUMINT,
     PRIMARY KEY (id),
     FOREIGN KEY (asset_ticket)
         REFERENCES asset(ticket),

@@ -11,14 +11,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/assets")
-@ResponseBody
 public class AssetController {
 
     private final AssetRepository assetRepository;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Asset create(Asset asset) {
+    public Asset create(@RequestBody final Asset asset) {
         Asset savedAsset = assetRepository.save(asset);
         log.info("Salvando Ativo {}", savedAsset);
 

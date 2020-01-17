@@ -3,20 +3,20 @@ package com.javadevzone.cotas.controllers;
 import com.javadevzone.cotas.entity.Investment;
 import com.javadevzone.cotas.entity.Wallet;
 import com.javadevzone.cotas.repository.InvestmentRepository;
-import com.javadevzone.cotas.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/investments")
@@ -27,7 +27,7 @@ public class InvestmentController {
     @PostMapping
     @ResponseStatus(CREATED)
     public Investment create(@RequestBody final Investment investment) {
-        investment.setDateTime(LocalDateTime.now());
+        investment.setCreatedAt(LocalDateTime.now());
 
         return investmentRepository.save(investment);
     }
@@ -40,13 +40,23 @@ public class InvestmentController {
         return investmentRepository.save(investment);
     }
 
-    @GetMapping("/{wallet.id}")
-    public ResponseEntity<Investment> get(@PathVariable("wallet.id") Long investmentId) {
+    @GetMapping("/{investment.id}")
+    public ResponseEntity<Investment> get(@PathVariable("investment.id") Long investmentId) {
         return investmentRepository
                 .findById(investmentId)
                 .map(investment -> ResponseEntity.status(HttpStatus.OK).body(investment))
                 .orElseThrow(() ->
                         new ResponseStatusException(NOT_FOUND, format("Investment com ID [%s] não foi encontrado.", investmentId)));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Investment>> getAllByWallet(Long walletId) {
+        log.info("Wallet ID {}", walletId);
+        return investmentRepository
+                .findAllByWallet(Wallet.builder().id(walletId).build())
+                .map(investments -> ResponseEntity.status(HttpStatus.OK).body(investments))
+                .orElseThrow(() ->
+                        new ResponseStatusException(NOT_FOUND, format("Investments com Wallet ID [%s] não foram encontrados.", walletId)));
     }
 
 }
