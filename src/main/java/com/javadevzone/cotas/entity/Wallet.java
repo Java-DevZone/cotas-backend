@@ -2,21 +2,21 @@ package com.javadevzone.cotas.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-@Data
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Getter
+@Setter
+@EqualsAndHashCode
 public class Wallet {
 
     @Id
@@ -37,5 +37,9 @@ public class Wallet {
     @JsonIgnore
     @OneToMany(mappedBy = "wallet")
     private Set<QuotaHolder> quotaHolders;
+
+    public Wallet(Long id) {
+        this.id = id;
+    }
 
 }

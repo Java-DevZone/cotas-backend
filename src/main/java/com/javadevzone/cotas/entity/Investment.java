@@ -1,22 +1,20 @@
 package com.javadevzone.cotas.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
+
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter @Setter
+@EqualsAndHashCode
 public class Investment {
 
     @Id
@@ -29,6 +27,7 @@ public class Investment {
     private LocalDateTime updatedAt;
 
     @OneToOne
+    @NotNull
     private Asset asset;
 
     @ManyToOne

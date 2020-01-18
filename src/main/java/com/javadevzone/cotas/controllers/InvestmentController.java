@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.*;
@@ -52,8 +53,8 @@ public class InvestmentController {
     @GetMapping
     public ResponseEntity<List<Investment>> getAllByWallet(Long walletId) {
         log.info("Wallet ID {}", walletId);
-        return investmentRepository
-                .findAllByWallet(Wallet.builder().id(walletId).build())
+        return Optional.ofNullable(investmentRepository
+                .findAllByWallet(Wallet.builder().id(walletId).build()))
                 .map(investments -> ResponseEntity.status(HttpStatus.OK).body(investments))
                 .orElseThrow(() ->
                         new ResponseStatusException(NOT_FOUND, format("Investments com Wallet ID [%s] não foram encontrados.", walletId)));

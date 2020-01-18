@@ -9,7 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -21,7 +21,7 @@ public class AssetHistory {
     @Id
     private Long id;
     private BigDecimal value;
-    private LocalDateTime dateTime;
+    private LocalDate dateTime;
 
     @OneToOne
     private Asset asset;
