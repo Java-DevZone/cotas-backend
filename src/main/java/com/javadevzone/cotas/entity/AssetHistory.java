@@ -1,9 +1,7 @@
 package com.javadevzone.cotas.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -16,11 +14,14 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Entity
+@ToString
 public class AssetHistory {
 
     @Id
     private Long id;
     private BigDecimal value;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dateTime;
 
     @OneToOne

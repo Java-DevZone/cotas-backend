@@ -7,6 +7,7 @@ import com.javadevzone.cotas.services.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,9 +54,9 @@ public class WalletController {
                         new ResponseStatusException(NOT_FOUND, format("Wallet com ID [%s] não foi encontrada.", walletId)));
     }
 
-    @DeleteMapping("/{wallet.id}")
+    @DeleteMapping("/{walletId}")
     @ResponseStatus(NO_CONTENT)
-    public void delete(@PathVariable("wallet.id") Long walletId) {
+    public void delete(@PathVariable Long walletId) {
         try {
             walletRepository.deleteById(walletId);
         }catch (EmptyResultDataAccessException e) {

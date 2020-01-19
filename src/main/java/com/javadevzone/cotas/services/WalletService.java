@@ -17,10 +17,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -55,45 +52,6 @@ public class WalletService {
         return wallet;
     }
 
-    public List<QuotaHistory> calculateQuotaValueFrom(Long walletId, LocalDateTime date) {
-        return investmentRepository.findAllByWallet(new Wallet(walletId))
-                .stream()
-                .map(investment -> {
-                    List<QuotaHistoryData> quotaHistoryData = assetHistoryRepository
-                            .findAllByAssetAndDateTimeAfterOrderByDateTimeAsc(investment.getAsset(), investment.getCreatedAt().toLocalDate())
-                            .flatMap(assetHistories -> {
-                                List<QuotaHistoryData> dataList = new LinkedList<>();
-                                QuotaHistoryData yesterdayValue = null;
-
-
-                                for (AssetHistory history : assetHistories) {
-                                    if (isNull(yesterdayValue)) {
-                                        yesterdayValue = new QuotaHistoryData(history.getDateTime(), BigDecimal.ONE, history.getValue());
-                                    } else {
-                                        BigDecimal newQuotaValue = calculateQuota(yesterdayValue, history);
-
-                                        yesterdayValue = new QuotaHistoryData(history.getDateTime(), newQuotaValue, history.getValue());
-                                    }
-                                    dataList.add(yesterdayValue);
-                                }
-
-                                return Optional.of(dataList);
-                            })
-                            .orElse(Collections.emptyList());
-                    return new QuotaHistory(investment.getAsset().getTicket(), quotaHistoryData);
-                })
-                .collect(Collectors.toList());
-    }
-
-    private BigDecimal calculateQuota(QuotaHistoryData yesterdayValue, AssetHistory history) {
-        BigDecimal dayVariation = calculatePercentage(yesterdayValue.getValue(), history.getValue());
-        return yesterdayValue.getQuota().add(yesterdayValue.getQuota().multiply(dayVariation));
-    }
-
-    private BigDecimal calculatePercentage(BigDecimal firstValue, BigDecimal actualValue) {
-        return actualValue.subtract(firstValue).divide(firstValue, 6, RoundingMode.CEILING);
-    }
-
     private BigDecimal calculaCota(final Wallet wallet, final BigDecimal financeiroHoje) {
         BigDecimal financeiroOntem = wallet.getTotalValue();
 
@@ -108,4 +66,45 @@ public class WalletService {
             throw new ValoresDeFechamentoInvalidoException(e, financeiroHoje, financeiroOntem);
         }
     }
+
+    public List<QuotaHistory> calculateQuotaValueFrom(Long walletId, LocalDateTime date) {
+        return investmentRepository.findAllByWallet(new Wallet(walletId))
+                .stream()
+                .map(investment -> {
+                    List<QuotaHistoryData> quotaHistoryData = assetHistoryRepository
+                            .findAllByAssetAndDateTimeAfterOrderByDateTimeAsc(investment.getAsset(), investment.getCreatedAt().toLocalDate())
+                            .flatMap(this::calculateQuotaHistory)
+                            .orElse(Collections.emptyList());
+                    return new QuotaHistory(investment.getAsset().getTicket(), quotaHistoryData);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private Optional<List<QuotaHistoryData>> calculateQuotaHistory(List<AssetHistory> assetHistories) {
+        List<QuotaHistoryData> dataList = new ArrayList<>();
+        QuotaHistoryData lastValue = null;
+
+        for (AssetHistory history : assetHistories) {
+            if (isNull(lastValue)) {
+                lastValue = new QuotaHistoryData(history.getDateTime(), BigDecimal.ONE, history.getValue());
+            } else {
+                BigDecimal newQuotaValue = calculateQuota(lastValue, history);
+
+                lastValue = new QuotaHistoryData(history.getDateTime(), newQuotaValue, history.getValue());
+            }
+            dataList.add(lastValue);
+        }
+
+        return Optional.of(dataList);
+    }
+
+    private BigDecimal calculateQuota(QuotaHistoryData yesterdayValue, AssetHistory history) {
+        BigDecimal dayVariation = calculatePercentage(yesterdayValue.getValue(), history.getValue());
+        return yesterdayValue.getQuota().add(yesterdayValue.getQuota().multiply(dayVariation));
+    }
+
+    private BigDecimal calculatePercentage(BigDecimal firstValue, BigDecimal actualValue) {
+        return actualValue.subtract(firstValue).divide(firstValue, 6, RoundingMode.CEILING);
+    }
+
 }

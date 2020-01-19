@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter @Setter
-@EqualsAndHashCode
+@Data
 public class Investment {
 
     @Id

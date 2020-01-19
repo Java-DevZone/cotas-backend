@@ -10,13 +10,11 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Getter
-@Setter
-@EqualsAndHashCode
 public class Wallet {
 
     @Id
@@ -30,7 +28,7 @@ public class Wallet {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @JsonBackReference
+    @JsonIgnore
     @OneToMany(mappedBy = "wallet")
     private Set<Investment> investments;
 

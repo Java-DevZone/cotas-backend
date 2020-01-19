@@ -23,6 +23,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.ResultMatcher.matchAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,6 +52,7 @@ public class WalletControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(post("/wallet")
                 .contentType(APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
                 .content(mapper.writeValueAsString(alaska)))
                 .andExpect(matchAll(status().isCreated()))
                 .andReturn();
