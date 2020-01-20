@@ -7,7 +7,6 @@ import com.javadevzone.cotas.entity.Wallet;
 import com.javadevzone.cotas.exceptions.ValoresDeFechamentoInvalidoException;
 import com.javadevzone.cotas.repository.AssetHistoryRepository;
 import com.javadevzone.cotas.repository.InvestmentRepository;
-import com.javadevzone.cotas.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,10 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -28,7 +30,6 @@ import static java.util.Objects.isNull;
 public class WalletService {
 
     private final AssetHistoryRepository assetHistoryRepository;
-    private final WalletRepository walletRepository;
     private final InvestmentRepository investmentRepository;
 
     private final static MathContext MATH_CONTEXT = new MathContext(6, RoundingMode.HALF_UP);
@@ -36,10 +37,10 @@ public class WalletService {
     public Wallet consolidar(Wallet wallet) {
         BigDecimal resultadoFinanceiroHoje = wallet.getInvestments()
                 .stream()
-                .map(investment -> {
-                    AssetHistory fechamentoHoje = assetHistoryRepository.findByAssetAndDateTime(investment.getAsset(), LocalDate.now());
-                    return fechamentoHoje.getValue().multiply(new BigDecimal(investment.getQuantity()), MATH_CONTEXT);
-                }).reduce(BigDecimal::add)
+                .map(investment -> assetHistoryRepository.findByAssetAndDate(investment.getAsset(), LocalDate.now())
+                            .flatMap(assetHistory -> Optional.of(assetHistory.getValue().multiply(new BigDecimal(investment.getQuantity()), MATH_CONTEXT)))
+                            .orElse(BigDecimal.ZERO))
+                .reduce(BigDecimal::add)
                 .orElse(BigDecimal.ZERO);
 
         BigDecimal novaCota = calculaCota(wallet, resultadoFinanceiroHoje);
@@ -72,7 +73,7 @@ public class WalletService {
                 .stream()
                 .map(investment -> {
                     List<QuotaHistoryData> quotaHistoryData = assetHistoryRepository
-                            .findAllByAssetAndDateTimeAfterOrderByDateTimeAsc(investment.getAsset(), investment.getCreatedAt().toLocalDate())
+                            .findAllByAssetAndDateAfterOrderByDateAsc(investment.getAsset(), investment.getCreatedAt().toLocalDate())
                             .flatMap(this::calculateQuotaHistory)
                             .orElse(Collections.emptyList());
                     return new QuotaHistory(investment.getAsset().getTicket(), quotaHistoryData);
@@ -86,11 +87,11 @@ public class WalletService {
 
         for (AssetHistory history : assetHistories) {
             if (isNull(lastValue)) {
-                lastValue = new QuotaHistoryData(history.getDateTime(), BigDecimal.ONE, history.getValue());
+                lastValue = new QuotaHistoryData(history.getDate(), BigDecimal.ONE, history.getValue());
             } else {
                 BigDecimal newQuotaValue = calculateQuota(lastValue, history);
 
-                lastValue = new QuotaHistoryData(history.getDateTime(), newQuotaValue, history.getValue());
+                lastValue = new QuotaHistoryData(history.getDate(), newQuotaValue, history.getValue());
             }
             dataList.add(lastValue);
         }

@@ -22,7 +22,7 @@ public class AssetHistory {
     private BigDecimal value;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private LocalDate dateTime;
+    private LocalDate date;
 
     @OneToOne
     private Asset asset;

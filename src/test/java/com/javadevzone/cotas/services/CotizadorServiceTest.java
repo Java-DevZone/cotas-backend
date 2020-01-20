@@ -20,6 +20,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -67,13 +68,13 @@ public class CotizadorServiceTest {
         final BigDecimal variacaoDoDia = valueDeHoje.subtract(valueDeOntem).divide(valueDeOntem, 6, RoundingMode.HALF_UP);
         final BigDecimal quotaCalculada = wallet.getQuota().add(wallet.getQuota().multiply(variacaoDoDia));
 
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(asset), any(LocalDate.class)))
-                .thenReturn(AssetHistory.builder().asset(asset).value(valueDeHoje).build());
+        when(assetHistoryRepository.findByAssetAndDate(eq(asset), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(AssetHistory.builder().asset(asset).value(valueDeHoje).build()));
 
         Wallet consolidada = walletService.consolidar(wallet);
 
         assertThat(consolidada.getQuota()).isEqualTo(quotaCalculada);
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(asset), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(asset), any(LocalDate.class));
     }
 
     @Test
@@ -87,13 +88,13 @@ public class CotizadorServiceTest {
         final BigDecimal variacaoDoDia = valueDeHoje.subtract(valueDeOntem).divide(valueDeOntem, 6, RoundingMode.HALF_UP);
         final BigDecimal quotaCalculada = wallet.getQuota().add(wallet.getQuota().multiply(variacaoDoDia));
 
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(ticket), any(LocalDate.class)))
-                .thenReturn(AssetHistory.builder().asset(ticket).value(valueDeHoje).build());
+        when(assetHistoryRepository.findByAssetAndDate(eq(ticket), any(LocalDate.class)))
+                .thenReturn(Optional.of(AssetHistory.builder().asset(ticket).value(valueDeHoje).build()));
 
         Wallet consolidada = walletService.consolidar(wallet);
 
         assertThat(consolidada.getQuota()).isEqualTo(quotaCalculada);
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(ticket), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(ticket), any(LocalDate.class));
     }
 
     @Test
@@ -104,15 +105,15 @@ public class CotizadorServiceTest {
 
         final BigDecimal valueDeHoje = new BigDecimal("42.50");
 
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(ticket), any(LocalDate.class)))
-                .thenReturn(AssetHistory.builder().asset(ticket).value(valueDeHoje).build());
+        when(assetHistoryRepository.findByAssetAndDate(eq(ticket), any(LocalDate.class)))
+                .thenReturn(Optional.of(AssetHistory.builder().asset(ticket).value(valueDeHoje).build()));
 
         assertThatThrownBy(() -> walletService.consolidar(wallet))
             .isInstanceOf(ValoresDeFechamentoInvalidoException.class)
             .hasMessage("Não foi possível calcular a variação para os fechamentos "
                     + valueDeHoje.multiply(new BigDecimal(investment.getQuantity())) + " e " + wallet.getTotalValue());
 
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(ticket), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(ticket), any(LocalDate.class));
     }
 
     @Test
@@ -122,12 +123,12 @@ public class CotizadorServiceTest {
         AssetHistory mgluAssetHistoryHoje = AssetHistory.builder().asset(mglu3).value(new BigDecimal("47.25")).build();
 
         // mock
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(mglu3), any(LocalDate.class)))
-                .thenReturn(mgluAssetHistoryHoje);
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(vvar3), any(LocalDate.class)))
-                .thenReturn(vvarAssetHistoryHoje);
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(petr4), any(LocalDate.class)))
-                .thenReturn(petrAssetHistoryHoje);
+        when(assetHistoryRepository.findByAssetAndDate(eq(mglu3), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(mgluAssetHistoryHoje));
+        when(assetHistoryRepository.findByAssetAndDate(eq(vvar3), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(vvarAssetHistoryHoje));
+        when(assetHistoryRepository.findByAssetAndDate(eq(petr4), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(petrAssetHistoryHoje));
 
         // result
         Wallet consolidada = walletService.consolidar(wallet);
@@ -135,9 +136,9 @@ public class CotizadorServiceTest {
         assertThat(consolidada.getQuota())
                 .isEqualTo(new BigDecimal("1.031756").setScale(6, RoundingMode.HALF_UP));
 
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(mglu3), any(LocalDate.class));
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(vvar3), any(LocalDate.class));
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(petr4), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(mglu3), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(vvar3), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(petr4), any(LocalDate.class));
     }
 
     @Test
@@ -147,12 +148,12 @@ public class CotizadorServiceTest {
         AssetHistory petrAssetHistoryHoje = AssetHistory.builder().asset(petr4).value(new BigDecimal("22.66")).build();
 
         // mock
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(mglu3), any(LocalDate.class)))
-                .thenReturn(mgluAssetHistoryHoje);
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(vvar3), any(LocalDate.class)))
-                .thenReturn(vvarAssetHistoryHoje);
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(petr4), any(LocalDate.class)))
-                .thenReturn(petrAssetHistoryHoje);
+        when(assetHistoryRepository.findByAssetAndDate(eq(mglu3), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(mgluAssetHistoryHoje));
+        when(assetHistoryRepository.findByAssetAndDate(eq(vvar3), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(vvarAssetHistoryHoje));
+        when(assetHistoryRepository.findByAssetAndDate(eq(petr4), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(petrAssetHistoryHoje));
 
         // result
         Wallet consolidada = walletService.consolidar(wallet);
@@ -160,9 +161,9 @@ public class CotizadorServiceTest {
         assertThat(consolidada.getQuota())
                 .isEqualTo(new BigDecimal("0.870657").setScale(6, RoundingMode.HALF_UP));
 
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(mglu3), any(LocalDate.class));
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(vvar3), any(LocalDate.class));
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(petr4), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(mglu3), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(vvar3), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(petr4), any(LocalDate.class));
     }
 
 
@@ -173,12 +174,12 @@ public class CotizadorServiceTest {
         AssetHistory petrAssetHistoryHoje = AssetHistory.builder().asset(petr4).value(new BigDecimal("29.66")).build();
 
         // mock
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(mglu3), any(LocalDate.class)))
-                .thenReturn(mgluAssetHistoryHoje);
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(vvar3), any(LocalDate.class)))
-                .thenReturn(vvarAssetHistoryHoje);
-        when(assetHistoryRepository.findByAssetAndDateTime(eq(petr4), any(LocalDate.class)))
-                .thenReturn(petrAssetHistoryHoje);
+        when(assetHistoryRepository.findByAssetAndDate(eq(mglu3), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(mgluAssetHistoryHoje));
+        when(assetHistoryRepository.findByAssetAndDate(eq(vvar3), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(vvarAssetHistoryHoje));
+        when(assetHistoryRepository.findByAssetAndDate(eq(petr4), any(LocalDate.class)))
+                .thenReturn(Optional.ofNullable(petrAssetHistoryHoje));
 
         // result
         Wallet consolidada = walletService.consolidar(wallet);
@@ -186,9 +187,9 @@ public class CotizadorServiceTest {
         assertThat(consolidada.getQuota())
                 .isEqualTo(new BigDecimal("1.0").setScale(6, RoundingMode.HALF_UP));
 
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(mglu3), any(LocalDate.class));
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(vvar3), any(LocalDate.class));
-        verify(assetHistoryRepository, times(1)).findByAssetAndDateTime(eq(petr4), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(mglu3), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(vvar3), any(LocalDate.class));
+        verify(assetHistoryRepository, times(1)).findByAssetAndDate(eq(petr4), any(LocalDate.class));
     }
 
     @Test
@@ -199,7 +200,7 @@ public class CotizadorServiceTest {
                 .isInstanceOf(ValoresDeFechamentoInvalidoException.class)
                 .hasMessage("Não foi possível calcular a variação para os fechamentos 0 e 0");
 
-        verify(assetHistoryRepository, times(0)).findByAssetAndDateTime(any(), any());
+        verify(assetHistoryRepository, times(0)).findByAssetAndDate(any(), any());
     }
 
 }

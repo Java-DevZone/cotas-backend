@@ -18,7 +18,7 @@ CREATE TABLE asset (
 CREATE TABLE asset_history (
     id MEDIUMINT NOT NULL AUTO_INCREMENT,
     value DECIMAL(14,7),
-    date_time date,
+    date date,
     asset_ticket VARCHAR(100) NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (asset_ticket)
@@ -29,6 +29,7 @@ CREATE TABLE investment (
     id MEDIUMINT NOT NULL AUTO_INCREMENT,
     value DECIMAL(14,7),
     quantity INTEGER,
+    date DATE,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     asset_ticket VARCHAR(100),

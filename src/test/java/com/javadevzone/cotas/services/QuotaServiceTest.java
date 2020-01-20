@@ -6,20 +6,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.javadevzone.cotas.entity.Asset;
 import com.javadevzone.cotas.entity.AssetHistory;
 import com.javadevzone.cotas.entity.Investment;
-import com.javadevzone.cotas.entity.Wallet;
 import com.javadevzone.cotas.entity.enums.AssetType;
-import com.javadevzone.cotas.exceptions.ValoresDeFechamentoInvalidoException;
 import com.javadevzone.cotas.repository.AssetHistoryRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.javadevzone.cotas.repository.InvestmentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.internal.util.collections.Sets;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,10 +21,10 @@ import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -41,18 +35,46 @@ public class QuotaServiceTest {
     @InjectMocks
     private QuotaService quotaService;
 
+    @Mock
+    private AssetHistoryRepository assetHistoryRepository;
+
+    @Mock
+    private InvestmentRepository investmentRepository;
+
+    private final static String RESOURCES_PATH = "src/test/resources/";
+
     @Test
     public void given_an_asset_should_calculate_result_as_a_quota_and_return() {
-        Asset asset = Asset.builder().ticket("JHSF3").type(AssetType.ACAO).build();
-        List<AssetHistory> assetHistories = loadJhsfAssetHistory();
+        Asset asset = Asset.builder().ticket("JHSF3").build();
+        LocalDate jan17 = LocalDate.of(2020, 1, 17);
 
+        when(investmentRepository.findAllByAssetOrderByCreatedAtDesc(asset))
+                .thenReturn(loadJhsfInvestments());
+
+        when(assetHistoryRepository.findFirstByAssetOrderByDateDesc(asset))
+                .thenReturn(of(new AssetHistory(32L, new BigDecimal("8.64"), jan17, asset)));
+
+        BigDecimal quota = quotaService.calculateQuotaFor(asset);
+
+        assertThat(quota.setScale(6, RoundingMode.CEILING))
+                .isEqualTo(new BigDecimal("1.531915"));
     }
 
-    private List<AssetHistory> loadJhsfAssetHistory() {
+    private Optional<List<Investment>> loadJhsfInvestments() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
-            return objectMapper.readValue(Files.readString(Paths.get("src/test/resources/jhsf-asset-history.json")), new TypeReference<>() {});
+            return of(objectMapper.readValue(Files.readString(Paths.get(RESOURCES_PATH,"jhsf-investments.json")), new TypeReference<>() {}));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T> Optional<List<T>> loadJsonFileToObject(String fileName) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            return of(objectMapper.readValue(Files.readString(Paths.get(RESOURCES_PATH,fileName)), new TypeReference<>() {}));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
