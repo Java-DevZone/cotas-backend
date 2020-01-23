@@ -24,4 +24,8 @@ public class Asset {
     @Enumerated(EnumType.STRING)
     private AssetType type;
 
+    public Asset(String ticket) {
+        this.ticket = ticket;
+    }
+
 }

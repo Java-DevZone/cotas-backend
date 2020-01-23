@@ -12,8 +12,10 @@ import java.util.List;
 public class QuotaHistory {
 
     private String ticket;
-    private BigDecimal total;
+    private BigDecimal QuotaTotal;
     private List<QuotaHistoryData> dataList;
+
+    private QuotaHistoryData lastHistoryData;
 
     public QuotaHistory(String ticket, List<QuotaHistoryData> dataList) {
         this.ticket = ticket;

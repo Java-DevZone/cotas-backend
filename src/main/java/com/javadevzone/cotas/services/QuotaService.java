@@ -6,6 +6,7 @@ import com.javadevzone.cotas.entity.Asset;
 import com.javadevzone.cotas.entity.AssetHistory;
 import com.javadevzone.cotas.entity.Investment;
 import com.javadevzone.cotas.exceptions.AssetHistoryNotFoundException;
+import com.javadevzone.cotas.exceptions.AssetNotFoundException;
 import com.javadevzone.cotas.repository.AssetHistoryRepository;
 import com.javadevzone.cotas.repository.InvestmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,32 +28,32 @@ public class QuotaService {
     private final InvestmentRepository investmentRepository;
     private final AssetHistoryRepository assetHistoryRepository;
 
-    public BigDecimal calculateQuotaFor(Asset asset) {
-        QuotaHistory historyData = investmentRepository.findAllByAssetOrderByCreatedAtDesc(asset)
+    public QuotaHistory calculateQuotaFor(Asset asset) {
+        return investmentRepository.findAllByAssetOrderByDateAsc(asset)
                 .flatMap(investments -> calculateQuota(investments, asset))
-                .orElseThrow(() -> new RuntimeException("Error"));
-
-        return historyData.getTotal();
+                .orElseThrow(() -> new AssetNotFoundException(asset));
     }
 
     private Optional<QuotaHistory> calculateQuota(List<Investment> investments, Asset asset) {
         QuotaHistory quota = new QuotaHistory();
         quota.setDataList(new LinkedList<>());
-        quota.setTotal(BigDecimal.ZERO);
+        quota.setQuotaTotal(BigDecimal.ZERO);
 
-        QuotaHistoryData pastValue = null;
+        QuotaHistoryData lastHistoryData = null;
         for (Investment investment : investments) {
-            final var historyData = pastValue != null? pastValue.toBuilder().build() : null;
-            pastValue = calculateQuota(investment.getValue(), historyData, investment.getDate());
-            quota.setTotal(
-                    quota.getTotal().add(
-                            investment.getInvestmentTotal().divide(pastValue.getQuota(), 6, RoundingMode.CEILING)));
-            quota.getDataList().add(pastValue);
+            final var historyData = lastHistoryData != null? lastHistoryData.toBuilder().build() : null;
+            lastHistoryData = calculateQuota(investment.getValue(), historyData, investment.getDate());
+            quota.setQuotaTotal(
+                    quota.getQuotaTotal().add(
+                            investment.getInvestmentTotal().divide(lastHistoryData.getQuota(), 6, RoundingMode.CEILING)));
+            quota.getDataList().add(lastHistoryData);
         }
         AssetHistory history = assetHistoryRepository.findFirstByAssetOrderByDateDesc(asset)
                 .orElseThrow(() -> new AssetHistoryNotFoundException(asset));
-        pastValue = calculateQuota(history.getValue(), pastValue, history.getDate());
-        quota.getDataList().add(pastValue);
+        lastHistoryData = calculateQuota(history.getValue(), lastHistoryData, history.getDate());
+        quota.getDataList().add(lastHistoryData);
+
+        quota.setLastHistoryData(lastHistoryData);
 
         return Optional.of(quota);
     }

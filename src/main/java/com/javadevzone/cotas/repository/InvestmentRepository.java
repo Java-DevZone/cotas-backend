@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface InvestmentRepository extends CrudRepository<Investment, Long> {
 
-    Optional<List<Investment>> findAllByAssetOrderByCreatedAtDesc(Asset asset);
+    Optional<List<Investment>> findAllByAssetOrderByDateAsc(Asset asset);
 
     List<Investment> findAllByWallet(Wallet wallet);
 }

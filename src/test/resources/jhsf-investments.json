@@ -1,5 +1,5 @@
 [
   {"id":1, "value":5.64, "quantity": 300, "date": "29/11/2019", "asset": {"ticket": "JHSF3"}},
   {"id":2, "value":8.06, "quantity": -100, "date": "08/01/2020", "asset": {"ticket": "JHSF3"}},
-  {"id":3, "value":8.16, "quantity": 100, "date": "13/01/2020", "asset": {"ticket": "JHSF3"}}
+  {"id":3, "value":8.40, "quantity": 100, "date": "13/01/2020", "asset": {"ticket": "JHSF3"}}
 ]
