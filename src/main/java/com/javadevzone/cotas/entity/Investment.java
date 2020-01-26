@@ -24,6 +24,7 @@ public class Investment {
 
     private BigDecimal value;
     private Long quantity;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate date;
     private LocalDateTime createdAt;
@@ -32,9 +33,6 @@ public class Investment {
     @OneToOne
     @NotNull
     private Asset asset;
-
-    @ManyToOne
-    private QuotaHolder quotaHolder;
 
     @ManyToOne
     private Wallet wallet;

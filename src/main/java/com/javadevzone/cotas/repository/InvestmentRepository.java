@@ -6,6 +6,7 @@ import com.javadevzone.cotas.entity.Wallet;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,5 +15,7 @@ public interface InvestmentRepository extends CrudRepository<Investment, Long> {
 
     Optional<List<Investment>> findAllByAssetOrderByDateAsc(Asset asset);
 
-    List<Investment> findAllByWallet(Wallet wallet);
+    List<Investment> findAllByWalletOrderByDateAsc(Wallet wallet);
+
+    List<Investment> findAllByWalletAndDate(Wallet wallet, LocalDate date);
 }

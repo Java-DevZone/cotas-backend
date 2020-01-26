@@ -69,7 +69,7 @@ public class WalletService {
     }
 
     public List<QuotaHistory> calculateQuotaValueFrom(Long walletId, LocalDateTime date) {
-        return investmentRepository.findAllByWallet(new Wallet(walletId))
+        return investmentRepository.findAllByWalletOrderByDateAsc(new Wallet(walletId))
                 .stream()
                 .map(investment -> {
                     List<QuotaHistoryData> quotaHistoryData = assetHistoryRepository

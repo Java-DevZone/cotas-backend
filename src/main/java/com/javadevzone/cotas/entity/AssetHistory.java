@@ -24,6 +24,8 @@ public class AssetHistory {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate date;
 
+    private BigDecimal quantity;
+
     @OneToOne
     private Asset asset;
 

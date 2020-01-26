@@ -54,7 +54,7 @@ public class InvestmentController {
     public ResponseEntity<List<Investment>> getAllByWallet(Long walletId) {
         log.info("Wallet ID {}", walletId);
         return Optional.ofNullable(investmentRepository
-                .findAllByWallet(Wallet.builder().id(walletId).build()))
+                .findAllByWalletOrderByDateAsc(Wallet.builder().id(walletId).build()))
                 .map(investments -> ResponseEntity.status(HttpStatus.OK).body(investments))
                 .orElseThrow(() ->
                         new ResponseStatusException(NOT_FOUND, format("Investments com Wallet ID [%s] não foram encontrados.", walletId)));

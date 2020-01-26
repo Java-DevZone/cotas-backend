@@ -4,19 +4,21 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.javadevzone.cotas.dto.QuotaHistory;
+import com.javadevzone.cotas.entity.WalletHistory;
 import com.javadevzone.cotas.entity.Asset;
 import com.javadevzone.cotas.entity.AssetHistory;
 import com.javadevzone.cotas.entity.Investment;
-import com.javadevzone.cotas.entity.enums.AssetType;
+import com.javadevzone.cotas.entity.Wallet;
 import com.javadevzone.cotas.exceptions.AssetNotFoundException;
 import com.javadevzone.cotas.repository.AssetHistoryRepository;
+import com.javadevzone.cotas.repository.AssetRepository;
 import com.javadevzone.cotas.repository.InvestmentRepository;
+import com.javadevzone.cotas.repository.WalletHistoryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.verification.VerificationMode;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -24,12 +26,13 @@ import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,9 +43,12 @@ public class QuotaServiceTest {
 
     @Mock
     private AssetHistoryRepository assetHistoryRepository;
-
     @Mock
     private InvestmentRepository investmentRepository;
+    @Mock
+    private AssetRepository assetRepository;
+    @Mock
+    private WalletHistoryRepository walletHistoryRepository;
 
     private final static String RESOURCES_PATH = "src/test/resources/";
 
@@ -55,7 +61,7 @@ public class QuotaServiceTest {
                 .thenReturn(loadJhsfInvestments());
 
         when(assetHistoryRepository.findFirstByAssetOrderByDateDesc(asset))
-                .thenReturn(of(new AssetHistory(32L, new BigDecimal("8.64"), jan17, asset)));
+                .thenReturn(of(new AssetHistory(32L, new BigDecimal("8.64"), jan17, BigDecimal.ZERO, asset)));
 
         QuotaHistory quota = quotaService.calculateQuotaFor(asset);
 
@@ -77,21 +83,44 @@ public class QuotaServiceTest {
                 .hasMessage("Não foi possível encontra a Asset com Ticket JHSF3");
     }
 
+    @Test
+    public void given_a_wallet_should_calculate_wallet_result_as_a_quota_and_return() {
+        Asset jhsf3 = Asset.builder().ticket("JHSF3").build();
+        Wallet myWallet = Wallet.builder().id(1L).build();
+
+
+        List<Investment> investments = singletonList(
+                Investment.builder().quantity(100L).value(new BigDecimal("8.25")).asset(jhsf3).build());
+
+        when(investmentRepository.findAllByWalletAndDate(myWallet, LocalDate.now()))
+                .thenReturn(investments);
+
+        when(walletHistoryRepository.findByWalletAndRegisterDate(myWallet, LocalDate.now().minus(1, ChronoUnit.DAYS)))
+                .thenReturn(Optional.empty());
+        when(assetRepository.findAssetsByWallet(myWallet))
+                .thenReturn(Optional.empty());
+
+        WalletHistory walletHistory = quotaService.calculateWalletQuota(myWallet);
+
+        assertThat(walletHistory.getQuota())
+                .isEqualTo(BigDecimal.ONE);
+    }
+
+
     private Optional<List<Investment>> loadJhsfInvestments() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
-            return of(objectMapper.readValue(Files.readString(Paths.get(RESOURCES_PATH,"jhsf-investments.json")), new TypeReference<>() {}));
+            return objectMapper.readValue(Files.readString(Paths.get(RESOURCES_PATH,"jhsf-investments.json")), new TypeReference<>() {});
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    private <T> Optional<List<T>> loadJsonFileToObject(String fileName) {
+    private List<Investment> loadInvestments() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
-            return of(objectMapper.readValue(Files.readString(Paths.get(RESOURCES_PATH,fileName)), new TypeReference<>() {}));
+            return objectMapper.readValue(Files.readString(Paths.get(RESOURCES_PATH,"mock-investments.json")), new TypeReference<>() {});
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
