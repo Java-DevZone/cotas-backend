@@ -7,7 +7,12 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Objects;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Data
 @Entity
@@ -23,11 +28,17 @@ public class WalletHistory {
 
     private BigDecimal quota;
     private BigDecimal totalQuotas;
-    private BigDecimal totalValue;
 
     private LocalDate registerDate;
 
     public BigDecimal getWalletValue() {
-        return this.quota.multiply(this.totalQuotas);
+        return this.quota.multiply(this.totalQuotas).setScale(6, RoundingMode.CEILING);
+    }
+
+    public void addTotalQuotas(BigDecimal acquiredQuotas) {
+        if (isNull(this.totalQuotas))
+            this.totalQuotas = BigDecimal.ZERO;
+
+        this.totalQuotas = this.totalQuotas.add(acquiredQuotas);
     }
 }

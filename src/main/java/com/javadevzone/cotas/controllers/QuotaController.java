@@ -1,8 +1,9 @@
 package com.javadevzone.cotas.controllers;
 
-import com.javadevzone.cotas.dto.QuotaHistory;
-import com.javadevzone.cotas.entity.Asset;
+import com.javadevzone.cotas.entity.Wallet;
+import com.javadevzone.cotas.entity.WalletHistory;
 import com.javadevzone.cotas.exceptions.AssetNotFoundException;
+import com.javadevzone.cotas.repository.WalletHistoryRepository;
 import com.javadevzone.cotas.services.QuotaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,14 @@ import static org.springframework.http.HttpStatus.OK;
 public class QuotaController {
 
     private final QuotaService quotaService;
+    private final WalletHistoryRepository walletHistoryRepository;
 
     @ResponseStatus(OK)
-    @PostMapping("/{ticket}")
-    public QuotaHistory calculateQuota(@PathVariable String ticket) {
+    @PostMapping("/{walletId}")
+    public WalletHistory calculateQuota(@PathVariable Long walletId) {
         try {
-            return quotaService.calculateQuotaFor(new Asset(ticket));
+            WalletHistory walletHistory = quotaService.calculateWalletQuota(new Wallet(walletId));
+            return walletHistoryRepository.save(walletHistory);
         } catch (AssetNotFoundException assetNotFound) {
             throw new ResponseStatusException(NOT_FOUND, assetNotFound.getMessage(), assetNotFound);
         }
