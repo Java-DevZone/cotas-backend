@@ -43,7 +43,7 @@ public class QuotaService {
 
         BigDecimal actualValue = calculateWalletActualValue(wallet).subtract(investedTotalValue);
         BigDecimal newQuota = calculateQuota(actualValue, walletHistory.getWalletValue(), walletHistory.getQuota());
-        WalletHistory todayWalletHistory = new WalletHistory(
+        WalletHistory todayWalletHistory = new WalletHistory(wallet.getId(),
                 wallet, newQuota, walletHistory.getTotalQuotas(), LocalDate.now());
         todayWalletHistory.addTotalQuotas(investedTotalValue.divide(newQuota, 6, RoundingMode.CEILING));
 

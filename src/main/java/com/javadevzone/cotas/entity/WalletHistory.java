@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -19,11 +20,14 @@ import static java.util.Objects.nonNull;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class WalletHistory {
+public class WalletHistory implements Serializable {
 
     @Id
+    @Column(name = "wallet_id")
+    private Long id;
+
     @ManyToOne
-    @JoinColumn(name = "wallet_id")
+    @JoinColumn(name = "wallet_id", insertable = false, updatable = false)
     private Wallet wallet;
 
     private BigDecimal quota;
