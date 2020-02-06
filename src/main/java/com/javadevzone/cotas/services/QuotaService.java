@@ -74,8 +74,47 @@ public class QuotaService {
         BigDecimal actualValue = BigDecimal.ZERO;
 
         for (Asset asset : assets) {
+            Long quantity = investmentRepository.getQuantityByWalletAndAssetAndDateBefore(wallet, asset)
+                    .orElse(0L);
+
             actualValue = actualValue.add(assetHistoryRepository.findFirstByAssetOrderByDateDesc(asset)
-                    .map(assetHistory -> assetHistory.getValue().multiply(assetHistory.getQuantity()))
+                    .map(assetHistory -> assetHistory.getValue().multiply(BigDecimal.valueOf(quantity)))
+                    .orElse(BigDecimal.ZERO));
+        }
+
+        return actualValue;
+    }
+
+    public WalletHistory recalculateWalletQuotaForDate(Wallet wallet, LocalDate dateToQuota) {
+        WalletHistory walletHistory = walletHistoryRepository.findByWalletAndRegisterDate(wallet, dateToQuota.minus(1, ChronoUnit.DAYS))
+                .orElse(WalletHistory.builder().quota(BigDecimal.ONE).totalQuotas(BigDecimal.ZERO).build());
+
+        List<Investment> investments = investmentRepository.findAllByWalletAndDateBefore(wallet, dateToQuota);
+        BigDecimal investedTotalValue = investments.stream()
+                .map(Investment::getInvestmentTotal)
+                .reduce(BigDecimal::add)
+                .orElse(BigDecimal.ZERO);
+
+        BigDecimal actualValue = calculateWalletActualValueForDate(wallet, dateToQuota).subtract(investedTotalValue);
+        BigDecimal newQuota = calculateQuota(actualValue, walletHistory.getWalletValue(), walletHistory.getQuota());
+        WalletHistory todayWalletHistory = new WalletHistory(wallet.getId(),
+                wallet, newQuota, walletHistory.getTotalQuotas(), dateToQuota);
+        todayWalletHistory.addTotalQuotas(investedTotalValue.divide(newQuota, 6, RoundingMode.CEILING));
+
+        return todayWalletHistory;
+    }
+
+    private BigDecimal calculateWalletActualValueForDate(Wallet wallet, LocalDate date) {
+        List<Asset> assets = assetRepository.findInvestedAssetsByDate(wallet, date)
+                .orElse(Collections.emptyList());
+        BigDecimal actualValue = BigDecimal.ZERO;
+
+        for (Asset asset : assets) {
+            Long quantity = investmentRepository.getQuantityByWalletAndAssetAndDateBefore(wallet, asset, date)
+                    .orElse(0L);
+
+            actualValue = actualValue.add(assetHistoryRepository.findFirstByAssetAndDate(asset, date)
+                    .map(assetHistory -> assetHistory.getValue().multiply(BigDecimal.valueOf(quantity)))
                     .orElse(BigDecimal.ZERO));
         }
 

@@ -17,6 +17,8 @@ public interface AssetHistoryRepository extends JpaRepository<AssetHistory, Long
 
     Optional<AssetHistory> findFirstByAssetOrderByDateDesc(Asset asset);
 
+    Optional<AssetHistory> findFirstByAssetAndDate(Asset asset, LocalDate date);
+
     Optional<List<AssetHistory>> findAllByAssetAndDateAfterOrderByDateAsc(Asset asset, LocalDate dateTime);
 
 }

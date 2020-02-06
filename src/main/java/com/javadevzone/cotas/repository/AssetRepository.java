@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,5 +18,12 @@ public interface AssetRepository extends CrudRepository<Asset, String> {
             "join investment.asset asset " +
             "where wallet = :wallet")
     Optional<List<Asset>> findAssetsByWallet(Wallet wallet);
+
+    @Query("select distinct asset from Wallet wallet " +
+            "join wallet.investments investment " +
+            "join investment.asset asset " +
+            "where wallet = :wallet " +
+            "and investment.date <= :date ")
+    Optional<List<Asset>> findInvestedAssetsByDate(Wallet wallet, LocalDate date);
 
 }
