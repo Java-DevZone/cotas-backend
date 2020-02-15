@@ -7,6 +7,7 @@ import com.javadevzone.cotas.entity.Wallet;
 import com.javadevzone.cotas.exceptions.ValoresDeFechamentoInvalidoException;
 import com.javadevzone.cotas.repository.AssetHistoryRepository;
 import com.javadevzone.cotas.repository.InvestmentRepository;
+import com.javadevzone.cotas.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class WalletService {
 
     private final AssetHistoryRepository assetHistoryRepository;
     private final InvestmentRepository investmentRepository;
+    private final WalletRepository walletRepository;
 
     private final static MathContext MATH_CONTEXT = new MathContext(6, RoundingMode.HALF_UP);
 
@@ -69,7 +71,10 @@ public class WalletService {
     }
 
     public List<QuotaHistory> calculateQuotaValueFrom(Long walletId, LocalDateTime date) {
-        return investmentRepository.findAllByWalletOrderByDateAsc(new Wallet(walletId))
+        Wallet wallet = walletRepository.findById(walletId)
+                .orElse(Wallet.builder().id(walletId).build());
+
+        return investmentRepository.findAllByWalletOrderByDateAsc(wallet)
                 .stream()
                 .map(investment -> {
                     List<QuotaHistoryData> quotaHistoryData = assetHistoryRepository

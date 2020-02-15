@@ -10,10 +10,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.Objects;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @Data
 @Entity
@@ -35,6 +33,7 @@ public class WalletHistory implements Serializable {
 
     private LocalDate registerDate;
 
+    @Transient
     public BigDecimal getWalletValue() {
         return this.quota.multiply(this.totalQuotas).setScale(6, RoundingMode.CEILING);
     }

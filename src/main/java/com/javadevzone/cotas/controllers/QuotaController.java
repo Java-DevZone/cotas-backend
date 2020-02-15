@@ -34,7 +34,7 @@ public class QuotaController {
                                                  @RequestBody  QuotaForDate quotaForDate) {
         try {
             log.info("Data recebida: {}", quotaForDate.getDate());
-            WalletHistory walletHistory = quotaService.calculateQuotaValue(new Wallet(walletId), quotaForDate.getDate());
+            WalletHistory walletHistory = quotaService.calculateQuotaValue(walletId, quotaForDate.getDate());
             return walletHistoryRepository.save(walletHistory);
         } catch (AssetNotFoundException assetNotFound) {
             throw new ResponseStatusException(NOT_FOUND, assetNotFound.getMessage(), assetNotFound);

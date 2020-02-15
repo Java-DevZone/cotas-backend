@@ -10,11 +10,12 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 
-@Data
+@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@Getter @Setter
+@ToString(exclude = {"investments", "quotaHolders"})
 public class Wallet {
 
     @Id
@@ -35,9 +36,5 @@ public class Wallet {
     @JsonIgnore
     @OneToMany(mappedBy = "wallet")
     private Set<QuotaHolder> quotaHolders;
-
-    public Wallet(Long id) {
-        this.id = id;
-    }
 
 }

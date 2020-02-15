@@ -34,9 +34,11 @@ public class Investment {
     @NotNull
     private Asset asset;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
+    @Transient
     public BigDecimal getInvestmentTotal() {
         return this.value.multiply(new BigDecimal(quantity));
     }

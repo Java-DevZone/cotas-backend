@@ -45,6 +45,7 @@ dependencies {
 	testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: '2.25.1', ext: 'pom'
 	testCompile group: 'com.h2database', name: 'h2', version: '1.4.200'
 	compile group: 'org.springframework.boot', name: 'spring-boot-devtools'
+	compile group: 'com.zaxxer', name: 'HikariCP', version: '3.4.1'
 }
 
 test {
