@@ -1,9 +1,6 @@
 package com.javadevzone.cotas.services;
 
-import com.javadevzone.cotas.entity.Asset;
-import com.javadevzone.cotas.entity.AssetHistory;
-import com.javadevzone.cotas.entity.Wallet;
-import com.javadevzone.cotas.entity.WalletHistory;
+import com.javadevzone.cotas.entity.*;
 import com.javadevzone.cotas.repository.AssetHistoryRepository;
 import com.javadevzone.cotas.repository.AssetRepository;
 import com.javadevzone.cotas.repository.InvestmentRepository;
@@ -16,6 +13,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.CEILING;
 import static java.util.Collections.emptyList;
 
@@ -37,13 +35,23 @@ public class InvestmentService {
                             .orElse(0L);
 
                     AssetHistory assetHistory = assetHistoryRepository.findByAssetAndDate(asset, date)
-                            .orElse(AssetHistory.builder().asset(asset).value(BigDecimal.ZERO).build());
+                            .orElse(AssetHistory.builder().asset(asset).value(ZERO).build());
                     return assetHistory.getValue().multiply(new BigDecimal(quantity));
                 })
                 .reduce(BigDecimal::add)
-                .orElse(BigDecimal.ZERO);
+                .orElse(ZERO);
 
-        return calculatePercentage(walletHistory.getWalletValue(), totalWalletValue);
+        BigDecimal previousWalletValue = walletHistory.getWalletValue();
+
+        if (previousWalletValue.compareTo(ZERO) == 0) {
+            previousWalletValue = investmentRepository.findAllByWalletAndDateBefore(walletHistory.getWallet(), date)
+                    .stream()
+                    .map(Investment::getInvestmentTotal)
+                    .reduce(BigDecimal::add)
+                    .orElse(ZERO);
+        }
+
+        return calculatePercentage(previousWalletValue, totalWalletValue);
     }
 
     private BigDecimal calculatePercentage(BigDecimal firstValue, BigDecimal actualValue) {
