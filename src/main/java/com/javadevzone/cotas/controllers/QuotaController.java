@@ -29,23 +29,12 @@ public class QuotaController {
     private final WalletHistoryRepository walletHistoryRepository;
 
     @ResponseStatus(OK)
-    @PostMapping("/{walletId}")
-    public WalletHistory calculateQuota(@PathVariable Long walletId) {
-        try {
-            WalletHistory walletHistory = quotaService.calculateWalletQuota(new Wallet(walletId));
-            return walletHistoryRepository.save(walletHistory);
-        } catch (AssetNotFoundException assetNotFound) {
-            throw new ResponseStatusException(NOT_FOUND, assetNotFound.getMessage(), assetNotFound);
-        }
-    }
-
-    @ResponseStatus(OK)
     @PostMapping("/{walletId}/recalculate")
     public WalletHistory recalculateQuotaForDate(@PathVariable Long walletId,
                                                  @RequestBody  QuotaForDate quotaForDate) {
         try {
             log.info("Data recebida: {}", quotaForDate.getDate());
-            WalletHistory walletHistory = quotaService.recalculateWalletQuotaForDate(new Wallet(walletId), quotaForDate.getDate());
+            WalletHistory walletHistory = quotaService.calculateQuotaValue(new Wallet(walletId), quotaForDate.getDate());
             return walletHistoryRepository.save(walletHistory);
         } catch (AssetNotFoundException assetNotFound) {
             throw new ResponseStatusException(NOT_FOUND, assetNotFound.getMessage(), assetNotFound);

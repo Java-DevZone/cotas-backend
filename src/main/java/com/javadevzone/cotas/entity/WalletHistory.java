@@ -23,11 +23,11 @@ import static java.util.Objects.nonNull;
 public class WalletHistory implements Serializable {
 
     @Id
-    @Column(name = "wallet_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "wallet_id", insertable = false, updatable = false)
+    @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
     private BigDecimal quota;

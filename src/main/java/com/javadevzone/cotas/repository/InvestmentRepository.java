@@ -27,6 +27,6 @@ public interface InvestmentRepository extends CrudRepository<Investment, Long> {
     Optional<Long> getQuantityByWalletAndAssetAndDateBefore(Wallet wallet, Asset asset, LocalDate date);
 
     @Query("select sum(i.quantity) from Investment i where i.wallet = :wallet and i.asset = :asset")
-    Optional<Long> getQuantityByWalletAndAssetAndDateBefore(Wallet wallet, Asset asset);
+    Optional<Long> getQuantityByWalletAndAsset(Wallet wallet, Asset asset);
 
 }

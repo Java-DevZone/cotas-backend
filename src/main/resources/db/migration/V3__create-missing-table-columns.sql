@@ -1,9 +1,10 @@
 CREATE TABLE wallet_history (
-    wallet_id MEDIUMINT NOT NULL AUTO_INCREMENT,
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    wallet_id MEDIUMINT NOT NULL,
     quota DECIMAL(14,7),
     total_quotas DECIMAL(14,7),
     register_date DATE,
-    PRIMARY KEY (wallet_id)
+    PRIMARY KEY (id)
 );
 
 ALTER TABLE asset_history ADD COLUMN (
