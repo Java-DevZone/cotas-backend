@@ -1,4 +1,4 @@
-# Sistema de Cotas
+# Sistema de Cotas 
 Calcular o lucro dos investimentos de cada participante do fundo/clube
 
 ## Rodar o Docker do Mysql
