@@ -59,7 +59,6 @@ class InvestmentServiceTest {
 
         BigDecimal result = investmentService.calculateInvestmentsProfitability(walletHistoryMock, LocalDate.now());
         assertEquals(0, BigDecimal.valueOf(-0.32240419).compareTo(result));
-
     }
 
 }
