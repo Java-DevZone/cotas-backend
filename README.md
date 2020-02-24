@@ -16,7 +16,7 @@
 
 <img alt="GitHub forks count" src="https://img.shields.io/github/forks/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
 
-[![Build Status](https://travis-ci.org/Java-DevZone/cotas-backend.svg?branch=master)](https://travis-ci.org/Java-DevZone/cotas-backend)
+<img alt="Travis (.org)" src="https://img.shields.io/travis/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
 
 </p>
 
