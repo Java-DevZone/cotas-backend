@@ -1,0 +1,8 @@
+script:
+  - docker run -d --rm --name mysql-server -v cotas-mysql:/var/lib/mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=cotas mysql:8.0
+  - gradle check
+before_install:
+  - chmod +x gradlew
+language: java
+jdk:
+  - openjdk11

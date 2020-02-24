@@ -1,4 +1,6 @@
-# Sistema de Cotas
+[![Build Status](https://travis-ci.com/luizleite-hotmart/sistemadecotas.svg?branch=master)](https://travis-ci.com/luizleite-hotmart/sistemadecotas) --TEM QUE TROCAR PARA O QUE VC CRIAR
+
+# Sistema de Cotas 
 Calcular o lucro dos investimentos de cada participante do fundo/clube
 
 ## Rodar o Docker do Mysql
