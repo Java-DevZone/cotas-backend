@@ -1,6 +1,26 @@
-[![Build Status](https://travis-ci.com/luizleite-hotmart/sistemadecotas.svg?branch=master)](https://travis-ci.com/luizleite-hotmart/sistemadecotas) --TEM QUE TROCAR PARA O QUE VC CRIAR
+<h1 align="center">
+    <img alt="Java DevZone" src="https://images-ext-1.discordapp.net/external/aPHCjuIeNxdUR5iRYu63gLvZYwx7acahDQrLNJt8JZc/https/static-cdn.jtvnw.net/jtv_user_pictures/8788e662-173a-4de6-b4fd-5cc534361c4d-profile_image-300x300.png" width="200px" />
+</h1>
 
-# Sistema de Cotas 
+<h2 align="center">
+    Backend for Quotas System
+</h2>
+
+<!--- Melhore ou adicione mais pelo link https://shields.io --->
+<p align="center">
+<img alt="GitHub " src="https://img.shields.io/github/license/Java-DevZone/cotas-backend?color=d42a2a&style=for-the-badge">
+
+<img alt="GitHub contributors count" src="https://img.shields.io/github/contributors/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
+
+<img alt="GitHub stars count" src="https://img.shields.io/github/stars/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
+
+<img alt="GitHub forks count" src="https://img.shields.io/github/forks/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
+
+[![Build Status](https://travis-ci.org/Java-DevZone/cotas-backend.svg?branch=master)](https://travis-ci.org/Java-DevZone/cotas-backend)
+
+</p>
+
+# Descrição
 Calcular o lucro dos investimentos de cada participante do fundo/clube
 
 ## Rodar o Docker do Mysql
