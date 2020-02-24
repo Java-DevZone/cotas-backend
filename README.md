@@ -8,15 +8,15 @@
 
 <!--- Melhore ou adicione mais pelo link https://shields.io --->
 <p align="center">
-<img alt="GitHub " src="https://img.shields.io/github/license/Java-DevZone/cotas-backend?color=d42a2a&style=for-the-badge">
+<img alt="GitHub" src="https://img.shields.io/github/license/Java-DevZone/cotas-backend?style=for-the-badge">
 
-<img alt="GitHub contributors count" src="https://img.shields.io/github/contributors/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
+<img alt="GitHub contributors count" src="https://img.shields.io/github/contributors/Java-DevZone/cotas-backend?style=for-the-badge">
 
-<img alt="GitHub stars count" src="https://img.shields.io/github/stars/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
+<img alt="GitHub stars count" src="https://img.shields.io/github/stars/Java-DevZone/cotas-backend?style=for-the-badge">
 
-<img alt="GitHub forks count" src="https://img.shields.io/github/forks/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
+<img alt="GitHub forks count" src="https://img.shields.io/github/forks/Java-DevZone/cotas-backend?style=for-the-badge">
 
-<img alt="Travis (.org)" src="https://img.shields.io/travis/Java-DevZone/cotas-backend?style=for-the-badge&color=d42a2a">
+<img alt="Travis (.org)" src="https://img.shields.io/travis/Java-DevZone/cotas-backend?style=for-the-badge">
 
 </p>
 
