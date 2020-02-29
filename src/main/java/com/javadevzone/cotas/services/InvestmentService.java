@@ -1,6 +1,7 @@
 package com.javadevzone.cotas.services;
 
 import com.javadevzone.cotas.entity.*;
+import com.javadevzone.cotas.exceptions.WalletNotFoundException;
 import com.javadevzone.cotas.repository.AssetHistoryRepository;
 import com.javadevzone.cotas.repository.AssetRepository;
 import com.javadevzone.cotas.repository.InvestmentRepository;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static java.math.BigDecimal.ZERO;
 import static java.math.RoundingMode.CEILING;
@@ -60,5 +62,15 @@ public class InvestmentService {
 
         return percentage;
     }
+
+    public Investment addInvestment(Investment investment) {
+        if (Objects.isNull(investment.getWallet())) throw new WalletNotFoundException();
+
+        investment.setDate(LocalDate.now());
+
+        return investmentRepository.save(investment);
+    }
+
+
 
 }
