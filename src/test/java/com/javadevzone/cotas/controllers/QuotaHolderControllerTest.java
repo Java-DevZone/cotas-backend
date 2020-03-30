@@ -3,6 +3,7 @@ package com.javadevzone.cotas.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javadevzone.cotas.CotasApplication;
 import com.javadevzone.cotas.entity.QuotaHolder;
+import com.javadevzone.cotas.repository.QuotaHolderRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.ResultMatcher.matchAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -28,6 +30,9 @@ public class QuotaHolderControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private QuotaHolderRepository quotaHolderRepository;
 
     @Test
     public void should_create_a_new_quota_holder() throws Exception {
@@ -55,6 +60,25 @@ public class QuotaHolderControllerTest {
                 .content(mapper.writeValueAsString(new QuotaHolder())))
                 .andExpect(matchAll(status().is4xxClientError()))
                 .andReturn();
+
+    }
+
+    @Test
+    public void should_update_quota_holder_name_then_return() throws Exception {
+        QuotaHolder savedQuotaHolder = quotaHolderRepository.save(QuotaHolder.builder().name("Mrs Lovely").build());
+
+        savedQuotaHolder.setName("Nequinho");
+        MvcResult mvcResult = mockMvc.perform(put("/quotaHolder/" + savedQuotaHolder.getId())
+                .contentType(APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
+                .content(mapper.writeValueAsString(savedQuotaHolder)))
+                .andExpect(matchAll(status().isOk()))
+                .andReturn();
+
+        QuotaHolder investidor = mapper.readValue(mvcResult.getResponse().getContentAsString(), QuotaHolder.class);
+
+        assertThat(investidor.getName())
+                .isEqualTo(savedQuotaHolder.getName());
 
     }
 

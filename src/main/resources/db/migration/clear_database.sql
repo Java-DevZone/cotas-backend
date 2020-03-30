@@ -1,0 +1,9 @@
+drop table asset_history;
+drop table wallet_investments;
+drop table investment;
+drop table asset;
+drop table wallet_history;
+drop table wallet_quota_holders;
+drop table quota_holder;
+drop table wallet;
+drop table flyway_schema_history;
